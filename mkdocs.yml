@@ -1,0 +1,28 @@
+site_name: optiseek
+nav:
+    - 'Home': index.md
+    - 'optiseek API':
+        - '.metaheuristics':
+            - 'Population-Based Methods':
+                - 'Particle Swarm Optimizer': particle_swarm_optimization.md
+                - 'Firefly Algorithm': firefly_algorithm.md
+                - 'Differential Evolution': differential_evolution.md
+                - 'Mayfly Algorithm': mayfly_algorithm.md
+            - 'Local Search Methods':
+                - 'Simulated Annealing': simulated_annealing.md
+                - 'Tabu Search': tabu_search.md
+        - '.direct':
+            - 'Cyclic Coordinate Descent': cyclic_coordinate_descent.md
+            - 'Basic Pattern Search': basic_pattern_search.md
+            - 'Enhanced Pattern Search': enhanced_pattern_search.md
+        - '.testfunctions':
+            - 'Booths Function': booth.md
+            - 'Rosenbrock Function': rosenbrock.md
+            - 'Wheelers Ridge': wheelers_ridge.md
+            - 'Ackleys Function (2D)': ackley2D.md
+theme: 
+    name: readthedocs
+    prev_next_buttons_location: None
+    navigation_depth: 4
+    collapse_navigation: True
+    titles_only: True
