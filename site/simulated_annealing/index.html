@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Simulated Annealing - optiseek</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Simulated Annealing";
+        var mkdocs_page_input_path = "simulated_annealing.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> optiseek
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">optiseek API</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">.metaheuristics</a>
+    <ul class="current">
+                <li class="toctree-l2"><a class="reference internal" href="#">Population-Based Methods</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../particle_swarm_optimization/">Particle Swarm Optimizer</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../firefly_algorithm/">Firefly Algorithm</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../differential_evolution/">Differential Evolution</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../mayfly_algorithm/">Mayfly Algorithm</a>
+                </li>
+    </ul>
+                </li>
+                <li class="toctree-l2 current"><a class="reference internal current" href="#">Local Search Methods</a>
+    <ul class="current">
+                <li class="toctree-l3 current"><a class="reference internal current" href="./">Simulated Annealing</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../tabu_search/">Tabu Search</a>
+                </li>
+    </ul>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">.direct</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../cyclic_coordinate_descent/">Cyclic Coordinate Descent</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../basic_pattern_search/">Basic Pattern Search</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../enhanced_pattern_search/">Enhanced Pattern Search</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">.testfunctions</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../booth/">Booths Function</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../rosenbrock/">Rosenbrock Function</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../wheelers_ridge/">Wheelers Ridge</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../ackley2D/">Ackleys Function (2D)</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">optiseek</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>optiseek API &raquo;</li>
+          <li>.metaheuristics &raquo;</li>
+          <li>Local Search Methods &raquo;</li><li>Simulated Annealing</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="simulated-annealing">Simulated Annealing</h1>
+<p>This class represents the simulated annealing algorithm developed by Kirkpatrick et al. </p>
+<p>This is a local search method that takes inspiration from the annealing process in metals. Unlike deterministic gradient-based search methods, this algorithm has the ability to
+avoid being trapped in local optima. This is accomplished because there is a probability that a worse solution could be accepted during each iteration. As the iterations progress
+(i.e. temperature decreases), this probability diminishes and the algorithm is able to settle into what is hopefully a global optimum.</p>
+<hr />
+<blockquote>
+<p><em>class</em> optiseek.metaheuristics.<strong>simulated_annealing</strong>(<em>input_function, b_lower=-10, b_upper=10, find_minimum=True, max_iter=100, sol_threshold=None, max_unchanged_iter=None, sigma_coeff=0.2, neighbor_dim_changes=1, initial_guess=None, store_results=False, start_temperature=10, alpha=0.9</em>)</p>
+</blockquote>
+<hr />
+<h3 id="parameters">Parameters</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>input_function : <em>function</em></td>
+<td>Function that the algorithm will use to search for an optimum.<br/> *args will be passed to the function within the solver.</td>
+</tr>
+<tr>
+<td>b_lower : <em>float, list of floats, or ndarray</em></td>
+<td>Contains the lower bounds of each dimension in the search <br/>  space. Can be a float if the function is one-dimensional.</td>
+</tr>
+<tr>
+<td>b_upper : <em>float, list of floats, or ndarray</em></td>
+<td>Contains the upper bounds of each dimension in the search <br/>  space. Can be a float if the function is one-dimensional.</td>
+</tr>
+<tr>
+<td>find_minimum : <em>bool</em></td>
+<td>Indicates whether the optimimum of interest is a minimum<br/> or maximum. If true, looks for minimum. If false,<br/> looks for maximum.</td>
+</tr>
+<tr>
+<td>max_iter : <em>int</em></td>
+<td>Maximum number of iterations. If reached, the algorithm<br/> terminates.</td>
+</tr>
+<tr>
+<td>sol_threshold : <em>float</em></td>
+<td>If a solution is found better than this threshold, the iterations<br/> stop. <code>None</code> indicates that the algorithm will not consider this.</td>
+</tr>
+<tr>
+<td>max_unchanged_iter : <em>int</em></td>
+<td>If the solution does not improve after this many iterations,<br/> the solver terminates. <code>None</code> indicates that the algorithm<br/> will not consider this.</td>
+</tr>
+<tr>
+<td>sigma_coeff : <em>float</em></td>
+<td>Coefficient in (0, 0.5] to be multiplied by the bound widths<br/> for each dimension; the corresponding number is used for<br/> the standard deviation in the neighbor generation process.</td>
+</tr>
+<tr>
+<td>neighbor_dim_changes : <em>int</em></td>
+<td>Number of dimensions to mutate during the generation of<br/> a new neighbor position. Must be in [1, number of dimensions]</td>
+</tr>
+<tr>
+<td>initial_guess : <em>list of floats or ndarray</em></td>
+<td>Initial guess used in the solution process. Leave as <code>None</code> to<br/> start with a random initial guess.</td>
+</tr>
+<tr>
+<td>store_results : <em>bool</em></td>
+<td>Choose whether to save intermediate iteration results for<br/> post-processing or not. If true, results will be saved.</td>
+</tr>
+<tr>
+<td>start_temperature : <em>float</em></td>
+<td>Initial temperature to start iterations with.</td>
+</tr>
+<tr>
+<td>alpha : <em>float</em></td>
+<td>Temperature decay coefficient in [0.6, 1). The current<br/> temperature is multiplied by this at the end of each iteration.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="attributes">Attributes</h3>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>best_position : <em>ndarray</em></td>
+<td>Most optimal position found during the solution iterations.</td>
+</tr>
+<tr>
+<td>best_value : <em>float</em></td>
+<td>Most optimal function value found during the solution iterations.</td>
+</tr>
+<tr>
+<td>completed_iter : <em>int</em></td>
+<td>Number of iterations completed during the solution process.</td>
+</tr>
+<tr>
+<td>stored_positions : <em>ndarray</em></td>
+<td>Positions for each member of the population for each iteration after<br/> the solver is finished. Set to <code>None</code> if user does not choose to store results.<br/> The results are placed in an array in the following format:<br/> <code>[iteration, population member, position in each dimension]</code></td>
+</tr>
+<tr>
+<td>stored_values : <em>ndarray</em></td>
+<td>Function values for each member of the population for each iteration.<br/> Set to <code>None</code> if user does not choose to store results. The results are<br/> placed in an array in the following format:<br/> <code>[iteration, population member, function value]</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="methods">Methods</h3>
+<pre><code class="language-python">.solve()
+</code></pre>
+<p>Executes the algorithm solution with the current parameters. Results will be stored to the class attributes. If the user opted to store intermediate results, these will also be stored.</p>
+<ul>
+<li>Parameters<ul>
+<li>None</li>
+</ul>
+</li>
+<li>Returns<ul>
+<li>None</li>
+</ul>
+</li>
+</ul>
+<hr />
+<h3 id="example">Example</h3>
+<pre><code class="language-python">from optiseek.metaheuristics import simulated_annealing
+from optiseek.testfunctions import booth
+
+# create an instance of the algorithm, set its parameters, and solve
+alg = simulated_annealing(booth)  # create instance with booth test function
+alg.b_lower = [-10, -10] # define lower bounds
+alg.b_upper = [10, 10] # define upper bounds
+alg.max_iter = 100 # set iteration limit
+alg.sol_threshold = 0.001 # set a solution threshold
+alg.sigma_coeff = 0.02 # set a multiplier of bound widths for std. dev.
+alg.neighbor_dim_changes = 1 # only mutate 1 dimension at a time for neighbors
+alg.initial_guess = [2, 5] # set an initial guess of the optimum
+alg.start_temperature = 5 # start the temperature at 5
+alg.alpha = 0.925 # set the temperature decay rate
+
+# execute the algorithm
+alg.solve()
+
+# show the results!
+print(alg.best_value)
+print(alg.best_position)
+print(alg.completed_iter)
+</code></pre>
+<hr />
+<h3 id="references">References</h3>
+<p><a href="https://en.wikipedia.org/wiki/Simulated_annealing">Simulated Annealing on Wikipedia</a></p>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../mayfly_algorithm/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../tabu_search/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
