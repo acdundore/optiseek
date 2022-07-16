@@ -71,7 +71,7 @@ alg.max_iter = 100 # set iteration limit
 alg.sol_threshold = 0.001 # set a solution threshold
 alg.n_fireflies = 20 # define population size
 alg.beta = 0.3 # set linear visibility coefficient
-alg.alpha = 0.5 # set random walk coefficient
+alg.alpha = 0.05 # set random walk coefficient
 alg.gamma = 1.5 # set exponential visibility coefficient
 
 # execute the algorithm

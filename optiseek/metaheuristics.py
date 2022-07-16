@@ -1353,7 +1353,7 @@ class mayfly_algorithm(_metaheuristic):
                 self.best_value = top_male_or_female.function_value
                 unchanged_iterations = 0
 
-            # store intermediate results for post-processing of specified
+            # store intermediate results for post-processing if specified
             if self.store_results:
                 total_population = male_population + female_population
                 for i in range(len(total_population)):
@@ -1372,6 +1372,383 @@ class mayfly_algorithm(_metaheuristic):
         if self.store_results:
             self.stored_positions = self.stored_positions[0: self.completed_iter, :, :]
             self.stored_values = self.stored_values[0: self.completed_iter, :, :]
+
+
+class _flying_fox(_individual):
+    def __init__(self, n_dimensions=1):
+        super().__init__(n_dimensions)
+
+    @property
+    def previous_position(self):
+        return self._previous_position
+
+    @previous_position.setter
+    def previous_position(self, value):
+        self._previous_position = value
+
+    @property
+    def previous_function_value(self):
+        return self._previous_function_value
+
+    @previous_function_value.setter
+    def previous_function_value(self, value):
+        self._previous_function_value = value
+
+    @property
+    def a(self):
+        return self._a
+
+    @a.setter
+    def a(self, value):
+        self._a = value
+
+    @property
+    def pa(self):
+        return self._pa
+
+    @pa.setter
+    def pa(self, value):
+        self._pa = value
+
+    def update_position(self, input_function, find_minimum, coolest_position, coolest_value, population):
+        # set boolean to indicate that the fox is far from the coolest spot and needs to be replaced
+        is_far = False
+
+        # calculating new position based on proximity to coolest known spot
+        if abs(coolest_value - self.function_value) > self.delta_1 / 2:
+            # array of uniform random numbers in [0, 1)
+            r = np.random.rand(self.n_dimensions, )
+
+            # generate new position
+            new_position = self.position + self.a * r * (coolest_position - self.position)
+        else:
+            # use an array of mutation probabilities to determine parameters to be mutated if the fox is close to suffocation
+            mutation_probabilities = np.random.rand(self.n_dimensions,)
+            mutation_bool = mutation_probabilities > self.pa
+
+            # set a single dimension to mutate with 100% chance
+            mutation_bool[np.random.randint(0, high=self.n_dimensions)] = True
+
+            # two arrays of uniform random numbers in [0, 1)
+            r1 = np.random.rand(self.n_dimensions,)
+            r2 = np.random.rand(self.n_dimensions,)
+
+            # positions of two randomly selected foxes from the population
+            xR1 = population[np.random.randint(0, len(population))].position
+            xR2 = population[np.random.randint(0, len(population))].position
+
+            # generate new position, using mutation boolean to indicate dimensions to be changed
+            new_position = self.position + mutation_bool * (r1 * (coolest_position - self.position) + r2 * (xR1 - xR2))
+
+        # update position of the fox if the new_position is better
+        new_function_value = input_function(*new_position)
+        if (find_minimum == True and new_function_value < self.function_value) or (find_minimum == False and new_function_value > self.function_value):
+            self.previous_function_value = self.function_value.copy()
+            self.position = new_position
+            self.function_value = new_function_value
+        else:
+            if abs(coolest_value - self.function_value) > delta_3:
+                is_far = True
+
+        return is_far
+
+    def tune_parameters(self, find_minimum, delta_1, delta_2, delta_3, delta_max, a_crisps, pa_crisps):
+        # crisps take the form [low,medium, high]
+
+        # calulate delta and phi for parameter tuning
+        delta = abs(self.function_value - self.previous_function_value)
+        if (find_minimum == True and self.function_value < self.previous_function_value) or (find_minimum == False and self.function_value > self.previous_function_value):
+            phi_sign = 1
+        else:
+            phi_sign = -1
+        phi = phi_sign * (self.function_value - self.previous_function_value) / delta_max
+
+        # setting the Same, Near, and Far membership function values for delta
+        if 0 <= delta and delta < delta_1:
+            delta_same = 1
+            delta_near = 0
+            delta_far = 0
+        elif delta_1 <= delta and delta < delta_2:
+            delta_same = (delta_2 - delta) / (delta_2 - delta_1)
+            delta_near = (delta - delta_1) / (delta_2 - delta_1)
+            delta_far = 0
+        elif delta_2 <= delta and delta < delta_3:
+            delta_same = 0
+            delta_near = (delta_3 - delta) / (delta_3 - delta_2)
+            delta_far = (delta - delta_2) / (delta_3 - delta_2)
+        else:
+            delta_same = 0
+            delta_near = 0
+            delta_far = 1
+
+        # setting the Better, Same, and Worse membership values for phi
+        phi_same = min(max(1 - abs(phi), -1), 1)
+        if phi < 0:
+            phi_better = max(-phi, -1)
+            phi_worse = 0
+        else:
+            phi_better = 0
+            phi_worse = min(phi, 1)
+
+        # tuning parameters with the fuzzy rule system
+        membership_sum = delta_near + delta_same + delta_far + phi_worse + phi_same + phi_better
+        self.a = (phi_better * a_crisps[0] + phi_same * a_crisps[1] + delta_same * a_crisps[1] + delta_near * a_crisps[1] + phi_worse * a_crisps[2] + delta_far * a_crisps[2]) / membership_sum
+        self.pa = (phi_worse * pa_crisps[0] + delta_far * pa_crisps[0] + phi_same * pa_crisps[1] + delta_same * pa_crisps[1] + phi_better * pa_crisps[2] + delta_near * pa_crisps[2]) / membership_sum
+
+
+class flying_fox_algorithm(_metaheuristic):
+    """
+    A Flying Fox Algorithm optimizer.
+
+    Attributes
+    ----------
+    best_position : ndarray
+        Most optimal position found during the solution iterations.
+
+    best_value : float
+        Most optimal function value found during the solution iterations.
+
+    completed_iter : int
+        Number of iterations completed during the solution process.
+
+    stored_positions : ndarray
+        Positions for each particle for each iteration after the solver is finished. Set to None if user does not choose to store results.
+
+    stored_values : ndarray
+        Function values for each member of the population for each iteration. Set to None if user does not choose to store results.
+
+    Methods
+    -------
+    solve()
+        Executes the algorithm solution with the current parameters.
+    """
+    def __init__(self, input_function, b_lower=-10, b_upper=10, find_minimum=True, max_iter=100, sol_threshold=None, max_unchanged_iter=None, store_results=False):
+        """
+        Constructs the necessary attributes for the algorithm.
+
+        Parameters
+        ----------
+        input_function : function
+            Function object for the algorithm to optimize.
+
+        b_lower : float or list of floats or ndarray, default = -10
+            List or array containing the lower bounds of each dimension of the search space.
+
+        b_upper : float or list of floats or ndarray, default = 10
+            List or array containing the upper bounds of each dimension of the search space.
+
+        find_minimum : bool, default = True
+            Indicates whether the optimum of interest is a minimum or maximum. If false, looks for maximum.
+
+        max_iter : int, default = 100
+            Maximum number of iterations. If reached, the algorithm terminates.
+
+        sol_threshold : float, default = None
+            If a solution is found past this threshold, the iterations stop. None indicates that the algorithm will not consider this.
+
+        max_unchanged_iter : int, default = None
+            If the solution does not improve after this many iterations, the iterations stop.
+
+        store_results : bool, default = False
+            Choose whether to save results or not. If true, results will be saved to the stored_positions and stored_values properties.
+        """
+        super().__init__(input_function=input_function, b_lower=b_lower, b_upper=b_upper, find_minimum=find_minimum, max_iter=max_iter, sol_threshold=sol_threshold, max_unchanged_iter=max_unchanged_iter, store_results=store_results)
+
+    @property
+    def n_foxes(self):
+        return self._n_foxes
+
+    @n_foxes.setter
+    def n_foxes(self, value):
+        self._n_foxes = value
+
+    def _update_cool_hot_positions(self, population, coolest_value, hottest_value):
+        for ff in population:
+            if self.find_minimum:
+                if ff.function_value < coolest_value:
+                    coolest_value = ff.function_value
+                    coolest_position = ff.position.copy()
+                if ff.function_value > hottest_value:
+                    hottest_value = ff.function_value
+                    hottest_position = ff.position.copy()
+            else:
+                if ff.function_value > coolest_value:
+                    coolest_value = ff.function_value
+                    coolest_position = ff.position.copy()
+                if ff.function_value < hottest_value:
+                    hottest_value = ff.function_value
+                    hottest_position = ff.position.copy()
+
+        return [coolest_position, coolest_value, hottest_position, hottest_value]
+
+    def _update_SL(self, population, NL):
+        SL_dict = {}
+        for ff in population:
+            SL_dict[ff] = ff.function_value # adding to survival list, to be edited later
+
+        # sort the function values and truncate to create the survival list
+        SL = dict(sorted(SL_dict.items(), key=lambda x: x[1], reverse=not self.find_minimum)[0:NL]).keys()
+
+        # create an array of positions on the survival list for future use
+        SL_positions = np.zeros(shape=(NL, self.n_dimensions))
+        for i in range(len(SL)):
+            ff = SL[i]
+            SL_positions[i, :] = ff.position
+
+        return [SL, SL_positions]
+
+    def _new_fox_from_SL(self, flying_fox, SL_positions):
+        # generate random number in [2, NL]
+        n_from_SL = np.random.randint(2, NL + 1)
+
+        # calculate new position and corresponding function value
+        flying_fox.position = np.sum(SL_positions[0:n_from_SL, :], axis=0) / n_from_SL
+        flying_fox.function_value = self.input_function(*flying_fox.position)
+
+    def solve(self):
+        """
+        Executes the solution iterations for the algorithm.
+
+        Returns
+        -------
+        None
+        """
+        # initialize solution process and calculate number of foxes
+        self._initialize_solve()
+        self.n_foxes = np.ceil(10 + 2 * np.sqrt(self.n_dimensions))
+        self._initialize_stored_results(self.n_foxes)
+
+        # initialize the crisp rules for the internal parameters
+        a_crisps = [0.1, 1.5, 1.9]
+        pa_crisps = [0.5, 0.85, 0.99]
+
+        # set crowding tolerance to be used as a measure of closeness when calculating pD
+        crowding_tolerance = 0.005
+
+        # initialize survival list size
+        NL = np.ceil(self.n_foxes / 4)
+
+        # setting m vector bounds
+        m_max = np.array([0.2, 0.4, 0.6])
+        m_min = np.array([0.02, 0.04, 0.06])
+
+        # initialize the flying foxe population
+        population = [_flying_fox(n_dimensions=self.n_dimensions) for i in range(int(self.n_foxes))]
+
+        # generate initial positions for the flying foxes
+        [ff.random_position(self.b_lower, self.b_upper) for ff in population]
+
+        # calculate initial function values of flying foxes' positions
+        for ff in population:
+            ff.function_value = self.input_function(*ff.position)
+
+        # create the survival list
+        SL, SL_positions = self._update_SL(population, NL)
+
+        # find the coolest and hottest positions and function values
+        if self.find_minimum: # set initial values
+            coolest_value = np.Inf
+            hottest_value = -np.Inf
+        else:
+            coolest_value = -np.Inf
+            hottest_value = np.Inf
+
+        coolest_position, coolest_value, hottest_position, hottest_value = self._update_cool_hot_positions(population, coolest_value, hottest_value)
+
+        # start solution iterations
+        iteration_count = 0
+        unchanged_iterations = 0
+        while self._check_stopping_criteria(iteration_count, unchanged_iterations, self.best_value):
+            # setting the m vector for the current iteration and calculating corresponding delta values
+            m = m_max - (iteration_count / self.max_iter) * (m_max - m_min)
+            delta_max = abs(coolest_value - hottest_value)
+            delta_1 = m[0] * delta_max
+            delta_2 = m[1] * delta_max
+            delta_3 = m[2] * delta_max
+
+            # tune parameters and update positions for all flying foxes
+            for ff in population:
+                ff.tune_parameters(self.find_minimum, delta_1, delta_2, delta_3, delta_max, a_crisps, pa_crisps)
+                is_far = ff.update_position(self.input_function, self.find_minimum, coolest_position, coolest_value, population)
+
+                # if fox is "too far", kill the fox and use survival list to replace
+                if is_far:
+                    self._new_fox_from_SL(ff, SL_positions)
+
+                # update the survival list and coolest and hottest positions
+                SL, SL_positions = self._update_SL(population, NL)
+                coolest_position, coolest_value, hottest_position, hottest_value = self._update_cool_hot_positions(population, coolest_value, hottest_value)
+
+            # calculate pD and create a list of flying foxes in the "coolest spot"
+            nc = 0
+            foxes_in_coolest_spot = []
+            for ff in population:
+                # check to see if the position is close enough to be considered in the "same" position as coolest position
+                if abs((ff.function_value - coolest_value) / coolest_value) < crowding_tolerance:
+                    nc += 1
+                    foxes_in_coolest_spot.append(ff)
+
+            pD = (nc - 1) / self.n_foxes
+
+            # replace some foxes that die from "smothering" with either SL or reproduction
+            while len(foxes_in_coolest_spot) > 1:
+                # determine whether they die or not
+                p_replace = np.random.uniform(0, 1)
+                if p_replace < pD:
+                    ff_1 = foxes_in_coolest_spot[0]
+                    ff_2 = foxes_in_coolest_spot[1]
+                    # determine method of replacement with 50% probability
+                    if np.random.uniform(0, 1) > 0.5:
+                        self._new_fox_from_SL(ff_1, SL_positions)
+                        self._new_fox_from_SL(ff_2, SL_positions)
+                    else:
+                        # pick 2 random flying foxes from the population
+                        random_1, random_2 = np.random.choice(population, size=2, replace=False)
+                        L = np.random.uniform(0, 1, size=(self.n_dimensions))
+                        ff_1.position = L * random_1.position + (1 - L) * random_2.position
+                        ff_2.position = L * random_2.position + (1 - L) * random_1.position
+                        ff_1.function_value = self.input_function(*ff_1.position)
+                        ff_2.function_value = self.input_function(*ff_2.position)
+
+                # remove these flying foxes from the coolest spot list
+                del foxes_in_coolest_spot[0]
+                del foxes_in_coolest_spot[1]
+
+            # if there is a remaining flying fox, replace it with the survival list
+            if len(foxes_in_coolest_spot) > 0:
+                ff = foxes_in_coolest_spot[0]
+                self._new_fox_from_SL(ff, SL_positions)
+
+            # update the coolest and hottest positions and survival list
+            SL, SL_positions = self._update_SL(population, NL)
+            coolest_position, coolest_value, hottest_position, hottest_value = self._update_cool_hot_positions(population, coolest_value, hottest_value)
+
+            # update best recorded solutions
+            if self._first_is_better(coolest_value, self.best_value):
+                self.best_position = coolest_position.copy()
+                self.best_value = coolest_value
+                unchanged_iterations = 0
+
+            # store intermediate results for post-processing of specified
+            if self.store_results:
+                for i in range(len(population)):
+                    ff = population[i]
+                    self.stored_positions[iteration_count, i, :] = ff.position.copy()
+                    self.stored_values[iteration_count, i, :] = ff.function_value
+
+            # increment iterations
+            iteration_count += 1
+            unchanged_iterations += 1
+
+        # save final iteration count
+        self.completed_iter = iteration_count
+
+        # truncate intermediate results
+        if self.store_results:
+            self.stored_positions = self.stored_positions[0: self.completed_iter, :, :]
+            self.stored_values = self.stored_values[0: self.completed_iter, :, :]
+
+
 
 
 class simulated_annealing(_local_search):
