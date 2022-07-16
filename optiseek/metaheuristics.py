@@ -1410,12 +1410,12 @@ class _flying_fox(_individual):
     def pa(self, value):
         self._pa = value
 
-    def update_position(self, input_function, find_minimum, coolest_position, coolest_value, population):
+    def update_position(self, input_function, find_minimum, coolest_position, coolest_value, population, delta_1, delta_3):
         # set boolean to indicate that the fox is far from the coolest spot and needs to be replaced
         is_far = False
 
         # calculating new position based on proximity to coolest known spot
-        if abs(coolest_value - self.function_value) > self.delta_1 / 2:
+        if abs(coolest_value - self.function_value) > delta_1 / 2:
             # array of uniform random numbers in [0, 1)
             r = np.random.rand(self.n_dimensions, )
 
@@ -1562,7 +1562,7 @@ class flying_fox_algorithm(_metaheuristic):
     def n_foxes(self, value):
         self._n_foxes = value
 
-    def _update_cool_hot_positions(self, population, coolest_value, hottest_value):
+    def _update_cool_hot_positions(self, population, coolest_position, coolest_value, hottest_position, hottest_value):
         for ff in population:
             if self.find_minimum:
                 if ff.function_value < coolest_value:
@@ -1591,13 +1591,14 @@ class flying_fox_algorithm(_metaheuristic):
 
         # create an array of positions on the survival list for future use
         SL_positions = np.zeros(shape=(NL, self.n_dimensions))
-        for i in range(len(SL)):
-            ff = SL[i]
+        i = 0
+        for ff in SL:
             SL_positions[i, :] = ff.position
+            i += 1
 
         return [SL, SL_positions]
 
-    def _new_fox_from_SL(self, flying_fox, SL_positions):
+    def _new_fox_from_SL(self, flying_fox, NL, SL_positions):
         # generate random number in [2, NL]
         n_from_SL = np.random.randint(2, NL + 1)
 
@@ -1615,7 +1616,7 @@ class flying_fox_algorithm(_metaheuristic):
         """
         # initialize solution process and calculate number of foxes
         self._initialize_solve()
-        self.n_foxes = np.ceil(10 + 2 * np.sqrt(self.n_dimensions))
+        self.n_foxes = int(np.ceil(10 + 2 * np.sqrt(self.n_dimensions)))
         self._initialize_stored_results(self.n_foxes)
 
         # initialize the crisp rules for the internal parameters
@@ -1623,10 +1624,10 @@ class flying_fox_algorithm(_metaheuristic):
         pa_crisps = [0.5, 0.85, 0.99]
 
         # set crowding tolerance to be used as a measure of closeness when calculating pD
-        crowding_tolerance = 0.005
+        crowding_tolerance = 0.01
 
         # initialize survival list size
-        NL = np.ceil(self.n_foxes / 4)
+        NL = int(np.ceil(self.n_foxes / 4))
 
         # setting m vector bounds
         m_max = np.array([0.2, 0.4, 0.6])
@@ -1642,6 +1643,9 @@ class flying_fox_algorithm(_metaheuristic):
         for ff in population:
             ff.function_value = self.input_function(*ff.position)
 
+            # intialize previous function value as same
+            ff.previous_function_value = ff.function_value
+
         # create the survival list
         SL, SL_positions = self._update_SL(population, NL)
 
@@ -1653,7 +1657,10 @@ class flying_fox_algorithm(_metaheuristic):
             coolest_value = -np.Inf
             hottest_value = np.Inf
 
-        coolest_position, coolest_value, hottest_position, hottest_value = self._update_cool_hot_positions(population, coolest_value, hottest_value)
+        coolest_position = None
+        hottest_position = None
+
+        coolest_position, coolest_value, hottest_position, hottest_value = self._update_cool_hot_positions(population, coolest_position, coolest_value, hottest_position, hottest_value)
 
         # start solution iterations
         iteration_count = 0
@@ -1669,15 +1676,15 @@ class flying_fox_algorithm(_metaheuristic):
             # tune parameters and update positions for all flying foxes
             for ff in population:
                 ff.tune_parameters(self.find_minimum, delta_1, delta_2, delta_3, delta_max, a_crisps, pa_crisps)
-                is_far = ff.update_position(self.input_function, self.find_minimum, coolest_position, coolest_value, population)
+                is_far = ff.update_position(self.input_function, self.find_minimum, coolest_position, coolest_value, population, delta_1, delta_3)
 
                 # if fox is "too far", kill the fox and use survival list to replace
                 if is_far:
-                    self._new_fox_from_SL(ff, SL_positions)
+                    self._new_fox_from_SL(ff, NL, SL_positions)
 
                 # update the survival list and coolest and hottest positions
                 SL, SL_positions = self._update_SL(population, NL)
-                coolest_position, coolest_value, hottest_position, hottest_value = self._update_cool_hot_positions(population, coolest_value, hottest_value)
+                coolest_position, coolest_value, hottest_position, hottest_value = self._update_cool_hot_positions(population, coolest_position, coolest_value, hottest_position, hottest_value)
 
             # calculate pD and create a list of flying foxes in the "coolest spot"
             nc = 0
@@ -1691,7 +1698,11 @@ class flying_fox_algorithm(_metaheuristic):
             pD = (nc - 1) / self.n_foxes
 
             # replace some foxes that die from "smothering" with either SL or reproduction
-            while len(foxes_in_coolest_spot) > 1:
+            while len(foxes_in_coolest_spot) >= 2:
+                # if odd number of foxes in coolest spot, replace one with the SL
+                if np.remainder(len(foxes_in_coolest_spot), 2) != 0:
+                    ff = foxes_in_coolest_spot[0]
+                    self._new_fox_from_SL(ff, NL, SL_positions)
                 # determine whether they die or not
                 p_replace = np.random.uniform(0, 1)
                 if p_replace < pD:
@@ -1699,8 +1710,8 @@ class flying_fox_algorithm(_metaheuristic):
                     ff_2 = foxes_in_coolest_spot[1]
                     # determine method of replacement with 50% probability
                     if np.random.uniform(0, 1) > 0.5:
-                        self._new_fox_from_SL(ff_1, SL_positions)
-                        self._new_fox_from_SL(ff_2, SL_positions)
+                        self._new_fox_from_SL(ff_1, NL, SL_positions)
+                        self._new_fox_from_SL(ff_2, NL, SL_positions)
                     else:
                         # pick 2 random flying foxes from the population
                         random_1, random_2 = np.random.choice(population, size=2, replace=False)
@@ -1712,16 +1723,11 @@ class flying_fox_algorithm(_metaheuristic):
 
                 # remove these flying foxes from the coolest spot list
                 del foxes_in_coolest_spot[0]
-                del foxes_in_coolest_spot[1]
-
-            # if there is a remaining flying fox, replace it with the survival list
-            if len(foxes_in_coolest_spot) > 0:
-                ff = foxes_in_coolest_spot[0]
-                self._new_fox_from_SL(ff, SL_positions)
+                del foxes_in_coolest_spot[0]
 
             # update the coolest and hottest positions and survival list
             SL, SL_positions = self._update_SL(population, NL)
-            coolest_position, coolest_value, hottest_position, hottest_value = self._update_cool_hot_positions(population, coolest_value, hottest_value)
+            coolest_position, coolest_value, hottest_position, hottest_value = self._update_cool_hot_positions(population, coolest_position, coolest_value, hottest_position, hottest_value)
 
             # update best recorded solutions
             if self._first_is_better(coolest_value, self.best_value):
