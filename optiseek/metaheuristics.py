@@ -1443,8 +1443,8 @@ class _flying_fox(_individual):
         # update position of the fox if the new_position is better
         new_function_value = input_function(*new_position)
         if (find_minimum == True and new_function_value < self.function_value) or (find_minimum == False and new_function_value > self.function_value):
-            self.previous_function_value = self.function_value.copy()
-            self.position = new_position
+            self.previous_function_value = self.function_value
+            self.position = new_position.copy()
             self.function_value = new_function_value
         else:
             if abs(coolest_value - self.function_value) > delta_3:
@@ -1452,11 +1452,11 @@ class _flying_fox(_individual):
 
         return is_far
 
-    def tune_parameters(self, find_minimum, delta_1, delta_2, delta_3, delta_max, a_crisps, pa_crisps):
-        # crisps take the form [low,medium, high]
+    def tune_parameters(self, find_minimum, delta_1, delta_2, delta_3, delta_max, coolest_value, a_crisps, pa_crisps):
+        # crisps take the form [low, medium, high]
 
         # calulate delta and phi for parameter tuning
-        delta = abs(self.function_value - self.previous_function_value)
+        delta = abs(coolest_value - self.function_value)
         if (find_minimum == True and self.function_value < self.previous_function_value) or (find_minimum == False and self.function_value > self.previous_function_value):
             phi_sign = 1
         else:
@@ -1464,7 +1464,7 @@ class _flying_fox(_individual):
         phi = phi_sign * (self.function_value - self.previous_function_value) / delta_max
 
         # setting the Same, Near, and Far membership function values for delta
-        if 0 <= delta and delta < delta_1:
+        if delta < delta_1:
             delta_same = 1
             delta_near = 0
             delta_far = 0
@@ -1494,7 +1494,6 @@ class _flying_fox(_individual):
         membership_sum = delta_near + delta_same + delta_far + phi_worse + phi_same + phi_better
         self.a = (phi_better * a_crisps[0] + phi_same * a_crisps[1] + delta_same * a_crisps[1] + delta_near * a_crisps[1] + phi_worse * a_crisps[2] + delta_far * a_crisps[2]) / membership_sum
         self.pa = (phi_worse * pa_crisps[0] + delta_far * pa_crisps[0] + phi_same * pa_crisps[1] + delta_same * pa_crisps[1] + phi_better * pa_crisps[2] + delta_near * pa_crisps[2]) / membership_sum
-
 
 class flying_fox_algorithm(_metaheuristic):
     """
@@ -1598,13 +1597,14 @@ class flying_fox_algorithm(_metaheuristic):
 
         return [SL, SL_positions]
 
-    def _new_fox_from_SL(self, flying_fox, NL, SL_positions):
+    def _new_fox_from_SL(self, ff, NL, SL_positions):
         # generate random number in [2, NL]
         n_from_SL = np.random.randint(2, NL + 1)
 
         # calculate new position and corresponding function value
-        flying_fox.position = np.sum(SL_positions[0:n_from_SL, :], axis=0) / n_from_SL
-        flying_fox.function_value = self.input_function(*flying_fox.position)
+        ff.position = np.sum(SL_positions[0:n_from_SL, :], axis=0) / n_from_SL
+        ff.previous_function_value = ff.function_value
+        ff.function_value = self.input_function(*ff.position)
 
     def solve(self):
         """
@@ -1624,7 +1624,7 @@ class flying_fox_algorithm(_metaheuristic):
         pa_crisps = [0.5, 0.85, 0.99]
 
         # set crowding tolerance to be used as a measure of closeness when calculating pD
-        crowding_tolerance = 0.01
+        crowding_tolerance = 0.03
 
         # initialize survival list size
         NL = int(np.ceil(self.n_foxes / 4))
@@ -1675,7 +1675,7 @@ class flying_fox_algorithm(_metaheuristic):
 
             # tune parameters and update positions for all flying foxes
             for ff in population:
-                ff.tune_parameters(self.find_minimum, delta_1, delta_2, delta_3, delta_max, a_crisps, pa_crisps)
+                ff.tune_parameters(self.find_minimum, delta_1, delta_2, delta_3, delta_max, coolest_value, a_crisps, pa_crisps)
                 is_far = ff.update_position(self.input_function, self.find_minimum, coolest_position, coolest_value, population, delta_1, delta_3)
 
                 # if fox is "too far", kill the fox and use survival list to replace
@@ -1697,12 +1697,14 @@ class flying_fox_algorithm(_metaheuristic):
 
             pD = (nc - 1) / self.n_foxes
 
+            # if odd number of foxes in coolest spot (and more than 1), replace one with the SL
+            if nc > 1 and np.remainder(len(foxes_in_coolest_spot), 2) != 0:
+                ff = foxes_in_coolest_spot[0]
+                self._new_fox_from_SL(ff, NL, SL_positions)
+                del foxes_in_coolest_spot[0]
+
             # replace some foxes that die from "smothering" with either SL or reproduction
             while len(foxes_in_coolest_spot) >= 2:
-                # if odd number of foxes in coolest spot, replace one with the SL
-                if np.remainder(len(foxes_in_coolest_spot), 2) != 0:
-                    ff = foxes_in_coolest_spot[0]
-                    self._new_fox_from_SL(ff, NL, SL_positions)
                 # determine whether they die or not
                 p_replace = np.random.uniform(0, 1)
                 if p_replace < pD:
@@ -1720,6 +1722,8 @@ class flying_fox_algorithm(_metaheuristic):
                         ff_2.position = L * random_2.position + (1 - L) * random_1.position
                         ff_1.function_value = self.input_function(*ff_1.position)
                         ff_2.function_value = self.input_function(*ff_2.position)
+                        ff_1.previous_function_value = ff_1.function_value.copy()
+                        ff_2.previous_function_value = ff_2.function_value.copy()
 
                 # remove these flying foxes from the coolest spot list
                 del foxes_in_coolest_spot[0]
@@ -1753,8 +1757,6 @@ class flying_fox_algorithm(_metaheuristic):
         if self.store_results:
             self.stored_positions = self.stored_positions[0: self.completed_iter, :, :]
             self.stored_values = self.stored_values[0: self.completed_iter, :, :]
-
-
 
 
 class simulated_annealing(_local_search):
