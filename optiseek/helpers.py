@@ -132,7 +132,44 @@ class grid_search:
                 current_progress = "Iteration %d of %d complete." % (i+1, n_permutations)
                 print(current_progress)
 
-def constraint_penalty(input_function, constraint_functions, constraint_types, find_minimum=True, p_count=0, p_quadratic=1):
+def constraint_penalty(input_function, constraint_dict, find_minimum=True, p_quadratic=1, p_count=0):
+    """
+    Applies constraints to an objective function as penalties and returns a new penalized function to be optimized.
+
+    Parameters
+    ----------
+    input_function : function
+        Function object for the algorithm to optimize.
+
+    constraint_dict : dictionary with constraint functions as keys and constraint types as values
+        A dictionary that contains any number of constraint equations to be applied to the input function.
+        The dictionary is structured like {constraint function: constraint type} where the constraints are
+        compared to zero with a mathematical operator: g1(x) = 0, g2(x) < 0, etc.
+        The constraint function must share the same arguments in the same order as the objective function.
+        The constraint type must be one of the following strings: "<", "<=", ">", ">=", "=".
+
+        Example:
+        Constraint 1: 2x > 5y  ->  create constraint function g1(x, y) that returns 2x-5y
+        Constraint 2: 3x-y <= 4  ->  create constraint function g2(x, y) that returns 3x-y-4
+        Then create the constraint dictionary: {g1: ">", g2: "<="}
+
+    find_minimum : bool, default = True
+        Indicates whether the optimum of interest is a minimum or maximum. If false, looks for maximum.
+
+    p_quadratic : float, default = 1
+        Penalty multiplier for the quadratic penalty in [0, inf]. A value of zero will result in no
+        quadratic penalty to the objective function. A nonzero value smoothly penalizes the function according to
+        the magnitude that the constraint is broken.
+
+    p_count : float, default = 0
+        Penalty multiplier for the count penalty in [0, inf]. A value of zero will result in no
+        count penalty to the objective function. A nonzero value creates a sharp discontinuity where the
+        constraint is broken.
+
+    Returns
+    -------
+    A function representing the input objective function with the constraints applied as penalties.
+    """
 
     # TODO: add some checks for type of inputs, ensure constraint types are correct, function and type amounts match
 
@@ -146,11 +183,9 @@ def constraint_penalty(input_function, constraint_functions, constraint_types, f
             penalty_sign = -1
 
         # iterate through constraints and penalize the function output accordingly
-        for i in range(len(constraint_functions)):
+        for g, g_type in constraint_dict.items():
             # get current constraint function output and constraint type
-            g = constraint_functions[i]
             g_output = g(*args)
-            g_type = constraint_types[i]
 
             # evaluate penalty value and add it to the main functions output
             if g_type == "<":
