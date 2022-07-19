@@ -132,6 +132,41 @@ class grid_search:
                 current_progress = "Iteration %d of %d complete." % (i+1, n_permutations)
                 print(current_progress)
 
+def constraint_penalty(input_function, constraint_functions, constraint_types, find_minimum=True, p_count=0, p_quadratic=1):
+
+    # TODO: add some checks for type of inputs, ensure constraint types are correct, function and type amounts match
+
+    def penalized_function(*args):
+        # initialize the output as the plain function output
+        output = input_function(*args)
+
+        # include a sign change depending on whether the function is to be minimized or maximized
+        penalty_sign = 1
+        if find_minimum == False:
+            penalty_sign = -1
+
+        # iterate through constraints and penalize the function output accordingly
+        for i in range(len(constraint_functions)):
+            # get current constraint function output and constraint type
+            g = constraint_functions[i]
+            g_output = g(*args)
+            g_type = constraint_types[i]
+
+            # evaluate penalty value and add it to the main functions output
+            if g_type == "<":
+                output += penalty_sign * (p_quadratic * max(g_output, 0) ** 2 + p_count * (g_output < 0))
+            elif g_type == "<=":
+                output += penalty_sign * (p_quadratic * max(g_output, 0) ** 2 + p_count * (g_output <= 0))
+            elif g_type == ">":
+                output += penalty_sign * (p_quadratic * min(g_output, 0) ** 2 + p_count * (g_output > 0))
+            elif g_type == ">=":
+                output += penalty_sign * (p_quadratic * min(g_output, 0) ** 2 + p_count * (g_output >= 0))
+            else:
+                output += penalty_sign * (p_quadratic * g_output ** 2)
+
+        return output
+
+    return penalized_function
 
 
 
