@@ -2,13 +2,13 @@
 
 An open source collection of single-objective optimization algorithms for multi-dimensional functions.
 
-The purpose of this library is to give users access to a variety of optimization algorithms with extreme ease of use and interoperability.
-The parameters of each of the algorithms can be tuned by the users and there is a high level of input uniformity between algorithms of similar type.
+The purpose of this library is to give users access to a variety of black-box optimization algorithms with extreme ease of use and interoperability.
+The parameters of each of the algorithms can be tuned by the users and there is a high level of parameter uniformity between algorithms of similar type.
 
 ## Installation
 
 ```bash
-$ pip install optiseek
+pip install optiseek
 ```
 
 ## Usage

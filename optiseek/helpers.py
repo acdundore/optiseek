@@ -171,8 +171,6 @@ def constraint_penalty(input_function, constraint_dict, find_minimum=True, p_qua
     A function representing the input objective function with the constraints applied as penalties.
     """
 
-    # TODO: add some checks for type of inputs, ensure constraint types are correct, function and type amounts match
-
     def penalized_function(*args):
         # initialize the output as the plain function output
         output = input_function(*args)

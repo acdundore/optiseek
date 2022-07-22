@@ -8,6 +8,7 @@ nav:
                 - 'Firefly Algorithm': firefly_algorithm.md
                 - 'Differential Evolution': differential_evolution.md
                 - 'Mayfly Algorithm': mayfly_algorithm.md
+                - 'Flying Foxes Algorithm': flying_foxes_algorithm.md
             - 'Local Search Methods':
                 - 'Simulated Annealing': simulated_annealing.md
                 - 'Tabu Search': tabu_search.md

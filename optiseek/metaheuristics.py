@@ -1495,9 +1495,9 @@ class _flying_fox(_individual):
         self.a = (phi_better * a_crisps[0] + phi_same * a_crisps[1] + delta_same * a_crisps[1] + delta_near * a_crisps[1] + phi_worse * a_crisps[2] + delta_far * a_crisps[2]) / membership_sum
         self.pa = (phi_worse * pa_crisps[0] + delta_far * pa_crisps[0] + phi_same * pa_crisps[1] + delta_same * pa_crisps[1] + phi_better * pa_crisps[2] + delta_near * pa_crisps[2]) / membership_sum
 
-class flying_fox_algorithm(_metaheuristic):
+class flying_foxes_algorithm(_metaheuristic):
     """
-    A Flying Fox Algorithm optimizer.
+    A Flying Foxes Algorithm optimizer.
 
     Attributes
     ----------
@@ -1691,7 +1691,7 @@ class flying_fox_algorithm(_metaheuristic):
             foxes_in_coolest_spot = []
             for ff in population:
                 # check to see if the position is close enough to be considered in the "same" position as coolest position
-                if abs((ff.function_value - coolest_value) / coolest_value) < crowding_tolerance:
+                if abs((ff.function_value - coolest_value) / max(coolest_value, 1e-50)) < crowding_tolerance:
                     nc += 1
                     foxes_in_coolest_spot.append(ff)
 
