@@ -16,6 +16,9 @@ nav:
             - 'Cyclic Coordinate Descent': cyclic_coordinate_descent.md
             - 'Basic Pattern Search': basic_pattern_search.md
             - 'Enhanced Pattern Search': enhanced_pattern_search.md
+        - '.modelhelpers':
+            - 'Parameter Grid Search': parameter_grid_search.md
+            - 'Penalty Constraints': penalty_constraints.md
         - '.testfunctions':
             - 'Booths Function': booth.md
             - 'Rosenbrock Function': rosenbrock.md

@@ -1,10 +1,77 @@
 import itertools
 import numpy as np
 
-# TODO: this is in progress
+class parameter_grid_search:
+    """
+    Creates a grid of parameter permutations based on user input and runs a selected algorithm with those parameters to find the best set.
 
-class grid_search:
+    Attributes
+    ----------
+    param_permutations : list of dicts
+        A list of dictionaries that represent the parameter permutations used for each iteration of the grid search. In the
+        dicts, the parameter name as a string is the key and the parameter value is the value.
+
+    permutation_positions : list of ndarrays
+        A list containing the optimal positions found for each permutation of parameters. This corresponds with the permutations
+        in the param_permutations attribute.
+
+    permutation_values : list of floats
+        A list containing the optimal values found for each permutation of parameters. This corresponds with the permutations
+        in the param_permutations attribute.
+
+    best_parameters : dict
+        A dictionary containing the best performing set of parameters. The parameter names as strings are stored as keys and the
+        corresponding values are stored as values.
+
+    best_position : list or ndarray
+        The most optimal position that was found using the best performing parameters.
+
+    best_value : float
+        The most optimal function value that was found using the best performing parameters.
+
+    Methods
+    -------
+    solve()
+        Executes the parameter grid search process and stores the results in the class attributes.
+    """
     def __init__(self, algorithm, input_function, param_options, show_progress=False):
+        """
+        Constructs the necessary attributes for the parameter grid search.
+
+        Parameters
+        ----------
+        algorithm : class
+            Class of the algorithm that you would like to use.
+
+        input_function : function
+            Function object for the algorithm to optimize.
+
+        param_options : dict
+            Dictionary containing the grid of parameters to be explored with the parameter names (strings) as keys
+            and a list of parameter values as values. All permutations of parameters in this dict will be tested.
+            For inputs that would normally be in a list (like the search bounds on a 2+ dimensional function, for example),
+            place that list inside another list. For any parameters not specified, the default will be used.
+
+            Example of possible param_options dict for a 2D function using the simulated annealing algorithm:
+            param_options = {
+                "initial_guess": [[8, 4]],
+                "b_lower": [[-10, -10]],
+                "b_upper": [[10, 10]],
+                "sigma_coeff": [0.05, 0.1, 0.2, 0.3],
+                "max_iter": [50, 100, 500],
+                "start_temperature": [20, 10, 5, 2],
+                "alpha": [0.85, 0.93, 0.99],
+                "neighbor_dim_changes": [1, 2]
+                }
+
+            Note that the initial_guess, b_lower, and b_upper parameters will use the same values for every permutation,
+            but must be double bracketed due to the function being 2D.
+
+        show_progress : bool, default = False
+            Boolean to indicate whether the grid search will print progress to the console as the solve continues.
+            The number of permutations increases exponentially with respect to parameter inputs, so for high numbers
+            of parameter inputs, this can be useful to see how much longer the solver has left.
+        """
         self.algorithm = algorithm # instance of an algorithm object to be investigated
         self.param_options = param_options # dictionary of parameter options used to create parameter dictionary
         self.input_function = input_function # input function to be optimized
@@ -132,7 +199,8 @@ class grid_search:
                 current_progress = "Iteration %d of %d complete." % (i+1, n_permutations)
                 print(current_progress)
 
-def constraint_penalty(input_function, constraint_dict, find_minimum=True, p_quadratic=1, p_count=0):
+
+def penalty_constraints(input_function, constraint_dict, find_minimum=True, p_quadratic=1, p_count=0):
     """
     Applies constraints to an objective function as penalties and returns a new penalized function to be optimized.
 
@@ -170,7 +238,6 @@ def constraint_penalty(input_function, constraint_dict, find_minimum=True, p_qua
     -------
     A function representing the input objective function with the constraints applied as penalties.
     """
-
     def penalized_function(*args):
         # initialize the output as the plain function output
         output = input_function(*args)
