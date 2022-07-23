@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "optiseek"
-version = "0.1.0"
+version = "0.2.0"
 description = "A collection of single objective optimization algorithms for multi-dimensional functions."
 license = "MIT"
 authors = ["Alex Dundore <acdundore.5@gmail.com>"]
