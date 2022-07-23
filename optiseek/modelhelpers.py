@@ -209,7 +209,7 @@ def penalty_constraints(input_function, constraint_dict, find_minimum=True, p_qu
     input_function : function
         Function object for the algorithm to optimize.
 
-    constraint_dict : dictionary with constraint functions as keys and constraint types as values
+    constraint_dict : dict with constraint functions as keys and constraint types as values
         A dictionary that contains any number of constraint equations to be applied to the input function.
         The dictionary is structured like {constraint function: constraint type} where the constraints are
         compared to zero with a mathematical operator: g1(x) = 0, g2(x) < 0, etc.
@@ -236,7 +236,7 @@ def penalty_constraints(input_function, constraint_dict, find_minimum=True, p_qu
 
     Returns
     -------
-    A function representing the input objective function with the constraints applied as penalties.
+    A function representing the input objective function with the constraints applied as penalties to the function value.
     """
     def penalized_function(*args):
         # initialize the output as the plain function output
