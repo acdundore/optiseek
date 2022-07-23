@@ -5,15 +5,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Basic Pattern Search - optiseek</title>
+    <title>Parameter Grid Search - optiseek</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Basic Pattern Search";
-        var mkdocs_page_input_path = "basic_pattern_search.md";
+        var mkdocs_page_name = "Parameter Grid Search";
+        var mkdocs_page_input_path = "parameter_grid_search.md";
         var mkdocs_page_url = null;
       </script>
     
@@ -72,19 +72,19 @@
                 </li>
     </ul>
                   </li>
-                  <li class="toctree-l1 current"><a class="reference internal current" href="#">.direct</a>
-    <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="#">.direct</a>
+    <ul>
                 <li class="toctree-l2"><a class="reference internal" href="../cyclic_coordinate_descent/">Cyclic Coordinate Descent</a>
                 </li>
-                <li class="toctree-l2 current"><a class="reference internal current" href="./">Basic Pattern Search</a>
+                <li class="toctree-l2"><a class="reference internal" href="../basic_pattern_search/">Basic Pattern Search</a>
                 </li>
                 <li class="toctree-l2"><a class="reference internal" href="../enhanced_pattern_search/">Enhanced Pattern Search</a>
                 </li>
     </ul>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="#">.modelhelpers</a>
-    <ul>
-                <li class="toctree-l2"><a class="reference internal" href="../parameter_grid_search/">Parameter Grid Search</a>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">.modelhelpers</a>
+    <ul class="current">
+                <li class="toctree-l2 current"><a class="reference internal current" href="./">Parameter Grid Search</a>
                 </li>
                 <li class="toctree-l2"><a class="reference internal" href="../penalty_constraints/">Penalty Constraints</a>
                 </li>
@@ -118,7 +118,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
           <li>optiseek API &raquo;</li>
-          <li>.direct &raquo;</li><li>Basic Pattern Search</li>
+          <li>.modelhelpers &raquo;</li><li>Parameter Grid Search</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -128,15 +128,12 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="basic-pattern-search">Basic Pattern Search</h1>
-<p>This class represents a basic Hooke-Jeeves pattern search algorithm. </p>
-<p>This is a basic black-box optimization function that requires no knowledge of the form of the function to be optimized. The algorithm starts by selecting two sample points (one on each
-side of the current position, +/- the step size) for each dimension. If the best sample point is better than the current position, the algorithm sets the current position to the best sample
-point. Otherwise, the step size halves and the algorithm continues iterating. This method is effective and requires 2n function evaluations for each iteration, where n is the number of dimensions.
-It is also susceptible to getting stuck in local optima.</p>
+                <h1 id="parameter-grid-search">Parameter Grid Search</h1>
+<p>This class is a utility to help the user tune their optimization algorithms. This is accomplished by creating a grid of parameter permutations based on user input
+and running a selected algorithm with those parameters to find the best set. The final results of every permutation of parameters are saved for post-processing.</p>
 <hr />
 <blockquote>
-<p><em>class</em> optiseek.metaheuristics.<strong>basic_pattern_search</strong>(<em>input_function, initial_guess, find_minimum=True, max_iter=100, sol_threshold=None, store_results=False, max_step_size=1.0</em>)</p>
+<p><em>class</em> optiseek.modelhelpers.<strong>parameter_grid_search</strong>(<em>algorithm, input_function, param_options, show_progress=False</em>)</p>
 </blockquote>
 <hr />
 <h3 id="parameters">Parameters</h3>
@@ -149,32 +146,20 @@ It is also susceptible to getting stuck in local optima.</p>
 </thead>
 <tbody>
 <tr>
+<td>algorithm : <em>class</em></td>
+<td>Class of the algorithm that you would like to use.</td>
+</tr>
+<tr>
 <td>input_function : <em>function</em></td>
-<td>Function that the algorithm will use to search for an<br/> optimum. *args will be passed to the function within<br/> the solver.</td>
+<td>Function object for the algorithm to optimize.</td>
 </tr>
 <tr>
-<td>initial_guess : <em>float, list of floats, or ndarray</em></td>
-<td>The initial guess that the algorithm will start the<br/> search from. Can be a float if the function is<br/> one-dimensional.</td>
+<td>param_options : <em>dict</em></td>
+<td>Dictionary containing the grid of parameters to be explored<br/>with the parameter names (strings) as keys and a list of<br/>parameter values as values. All permutations of parameters<br/>in this dict will be tested. For inputs that would normally be<br/>in a list (like the search bounds on a 2+ dimensional function,<br/>for example), place that list inside another list.<br/>For any parameters not specified, the default will be used.<br/>See the example for more details.</td>
 </tr>
 <tr>
-<td>find_minimum : <em>bool</em></td>
-<td>Indicates whether the optimimum of interest is a minimum<br/> or maximum. If true, looks for minimum. If false,<br/> looks for maximum.</td>
-</tr>
-<tr>
-<td>max_iter : <em>int</em></td>
-<td>Maximum number of iterations. If reached, the algorithm<br/> terminates.</td>
-</tr>
-<tr>
-<td>sol_threshold : <em>float</em></td>
-<td>If a solution is found better than this threshold, the<br/> iterations stop. <code>None</code> indicates that the algorithm will<br/> not consider this.</td>
-</tr>
-<tr>
-<td>store_results : <em>bool</em></td>
-<td>Choose whether to save intermediate iteration results for<br/> post-processing or not. If true, results will be saved.</td>
-</tr>
-<tr>
-<td>max_step_size : <em>float</em></td>
-<td>Maximum step size that the algorithm can possibly take<br/> for each iteration in each direction.</td>
+<td>show_progress : <em>bool</em></td>
+<td>Boolean to indicate whether the grid search will print progress<br/> to the console as the solve continues. The number of permutations<br/>increases exponentially with respect to parameter inputs, so for high<br/>numbers of parameter inputs, this can be useful to see how much<br/>longer the solver has left.</td>
 </tr>
 </tbody>
 </table>
@@ -189,24 +174,28 @@ It is also susceptible to getting stuck in local optima.</p>
 </thead>
 <tbody>
 <tr>
-<td>best_position : <em>ndarray</em></td>
-<td>Most optimal position found during the solution iterations.</td>
+<td>param_permutations : <em>list of dicts</em></td>
+<td>A list of dictionaries that represent the parameter<br/>permutations used for each iteration of the grid search.<br/>In the dicts, the parameter name as a string is the key<br/>and the parameter value is the value.</td>
+</tr>
+<tr>
+<td>permutation_positions : <em>list of ndarrays</em></td>
+<td>A list containing the optimal positions found for each<br/>permutation of parameters. This corresponds with the<br/>permutations in the param_permutations attribute.</td>
+</tr>
+<tr>
+<td>permutation_values : <em>list of floats</em></td>
+<td>A list containing the optimal values found for each<br/>permutation of parameters. This corresponds with the<br/>permutations in the param_permutations attribute.</td>
+</tr>
+<tr>
+<td>best_parameters : <em>dict</em></td>
+<td>A dictionary containing the best performing set of<br/>parameters. The parameter names as strings are stored as<br/>keys and the corresponding values are stored as values.</td>
+</tr>
+<tr>
+<td>best_position : <em>list or ndarray</em></td>
+<td>The most optimal position that was found using the<br/>best performing parameters.</td>
 </tr>
 <tr>
 <td>best_value : <em>float</em></td>
-<td>Most optimal function value found during the solution iterations.</td>
-</tr>
-<tr>
-<td>completed_iter : <em>int</em></td>
-<td>Number of iterations completed during the solution process.</td>
-</tr>
-<tr>
-<td>stored_positions : <em>ndarray</em></td>
-<td>Positions for each member of the population for each iteration after<br/> the solver is finished. Set to <code>None</code> if user does not choose to store results.<br/> The results are placed in an array in the following format:<br/> <code>[iteration, population member, position in each dimension]</code></td>
-</tr>
-<tr>
-<td>stored_values : <em>ndarray</em></td>
-<td>Function values for each member of the population for each iteration.<br/> Set to <code>None</code> if user does not choose to store results. The results are<br/> placed in an array in the following format:<br/> <code>[iteration, population member, function value]</code></td>
+<td>The most optimal function value that was found using<br/>the best performing parameters.</td>
 </tr>
 </tbody>
 </table>
@@ -214,7 +203,7 @@ It is also susceptible to getting stuck in local optima.</p>
 <h3 id="methods">Methods</h3>
 <pre><code class="language-python">.solve()
 </code></pre>
-<p>Executes the algorithm solution with the current parameters. Results will be stored to the class attributes. If the user opted to store intermediate results, these will also be stored.</p>
+<p>Executes the parameter grid search process and stores the results in the class attributes.</p>
 <ul>
 <li>Parameters<ul>
 <li>None</li>
@@ -227,26 +216,38 @@ It is also susceptible to getting stuck in local optima.</p>
 </ul>
 <hr />
 <h3 id="example">Example</h3>
-<pre><code class="language-python">from optiseek.direct import basic_pattern_search
-from optiseek.testfunctions import booth
+<pre><code class="language-python">from optiseek.modelhelpers import parameter_grid_search
+from optiseek.metaheuristics import simulated_annealing
+from optiseek.testfunctions import ackley2D
 
-# create an instance of the algorithm, set its parameters, and solve
-alg = basic_pattern_search(booth, [0, 0])  # create instance with booth test function and initial guess [0, 0]
-alg.max_iter = 100 # set iteration limit
-alg.sol_threshold = 0.001 # set a solution threshold
-alg.max_step_size = 0.5 # define maximum step size
+# set up the param_options dictionary
+param_options = {
+    &quot;initial_guess&quot;: [[8, 4]],
+    &quot;b_lower&quot;: [[-10, -10]],
+    &quot;b_upper&quot;: [[10, 10]],
+    &quot;sigma_coeff&quot;: [0.05, 0.1, 0.2, 0.3],
+    &quot;max_iter&quot;: [50, 100, 500],
+    &quot;start_temperature&quot;: [20, 10, 5, 2],
+    &quot;alpha&quot;: [0.85, 0.93, 0.99],
+    &quot;neighbor_dim_changes&quot;: [1, 2]
+}
 
-# execute the algorithm
-alg.solve()
+# create the an instance of the grid search class and execute the solve method
+pgs = parameter_grid_search(simulated_annealing, ackley2D, param_options, show_progress=False)
+pgs.solve()
 
-# show the results!
-print(alg.best_value)
-print(alg.best_position)
-print(alg.completed_iter)
+# show all permutations and their associated optimal positions and values found
+for grid in range(len(pgs.param_permutations)):
+    print(pgs.param_permutations[i])
+
+print(pgs.permutation_positions)
+print(pgs.permutation_values)
+
+# print the best parameter permutation found and the associated optimal position and value
+print(pgs.best_parameters)
+print(pgs.best_position)
+print(pgs.best_value)
 </code></pre>
-<hr />
-<h3 id="references">References</h3>
-<p><a href="https://en.wikipedia.org/wiki/Pattern_search_(optimization)">Hooke-Jeeves Pattern Search on Wikipedia</a></p>
               
             </div>
           </div><footer>
@@ -271,10 +272,10 @@ print(alg.completed_iter)
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../cyclic_coordinate_descent/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../enhanced_pattern_search/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../enhanced_pattern_search/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../penalty_constraints/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
