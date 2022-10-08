@@ -8,7 +8,7 @@ The parameters of each of the algorithms can be tuned by the users and there is 
 ## Installation
 
 ```bash
-$ pip install optiseek
+pip install optiseek
 ```
 
 ## Usage

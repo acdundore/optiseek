@@ -1717,13 +1717,13 @@ class flying_foxes_algorithm(_metaheuristic):
                     else:
                         # pick 2 random flying foxes from the population
                         random_1, random_2 = np.random.choice(population, size=2, replace=False)
-                        L = np.random.uniform(0, 1, size=(self.n_dimensions))
+                        L = np.random.uniform(0, 1, size=self.n_dimensions)
                         ff_1.position = L * random_1.position + (1 - L) * random_2.position
                         ff_2.position = L * random_2.position + (1 - L) * random_1.position
                         ff_1.function_value = self.input_function(*ff_1.position)
                         ff_2.function_value = self.input_function(*ff_2.position)
-                        ff_1.previous_function_value = ff_1.function_value.copy()
-                        ff_2.previous_function_value = ff_2.function_value.copy()
+                        ff_1.previous_function_value = ff_1.function_value
+                        ff_2.previous_function_value = ff_2.function_value
 
                 # remove these flying foxes from the coolest spot list
                 del foxes_in_coolest_spot[0]

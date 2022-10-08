@@ -5,15 +5,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Basic Pattern Search - optiseek</title>
+    <title>Flying Foxes Algorithm - optiseek</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Basic Pattern Search";
-        var mkdocs_page_input_path = "basic_pattern_search.md";
+        var mkdocs_page_name = "Flying Foxes Algorithm";
+        var mkdocs_page_input_path = "flying_foxes_algorithm.md";
         var mkdocs_page_url = null;
       </script>
     
@@ -46,10 +46,10 @@
               </ul>
               <p class="caption"><span class="caption-text">optiseek API</span></p>
               <ul class="current">
-                  <li class="toctree-l1"><a class="reference internal" href="#">.metaheuristics</a>
-    <ul>
-                <li class="toctree-l2"><a class="reference internal" href="#">Population-Based Methods</a>
-    <ul>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">.metaheuristics</a>
+    <ul class="current">
+                <li class="toctree-l2 current"><a class="reference internal current" href="#">Population-Based Methods</a>
+    <ul class="current">
                 <li class="toctree-l3"><a class="reference internal" href="../particle_swarm_optimization/">Particle Swarm Optimizer</a>
                 </li>
                 <li class="toctree-l3"><a class="reference internal" href="../firefly_algorithm/">Firefly Algorithm</a>
@@ -58,7 +58,7 @@
                 </li>
                 <li class="toctree-l3"><a class="reference internal" href="../mayfly_algorithm/">Mayfly Algorithm</a>
                 </li>
-                <li class="toctree-l3"><a class="reference internal" href="../flying_foxes_algorithm/">Flying Foxes Algorithm</a>
+                <li class="toctree-l3 current"><a class="reference internal current" href="./">Flying Foxes Algorithm</a>
                 </li>
     </ul>
                 </li>
@@ -72,11 +72,11 @@
                 </li>
     </ul>
                   </li>
-                  <li class="toctree-l1 current"><a class="reference internal current" href="#">.direct</a>
-    <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="#">.direct</a>
+    <ul>
                 <li class="toctree-l2"><a class="reference internal" href="../cyclic_coordinate_descent/">Cyclic Coordinate Descent</a>
                 </li>
-                <li class="toctree-l2 current"><a class="reference internal current" href="./">Basic Pattern Search</a>
+                <li class="toctree-l2"><a class="reference internal" href="../basic_pattern_search/">Basic Pattern Search</a>
                 </li>
                 <li class="toctree-l2"><a class="reference internal" href="../enhanced_pattern_search/">Enhanced Pattern Search</a>
                 </li>
@@ -118,7 +118,8 @@
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
           <li>optiseek API &raquo;</li>
-          <li>.direct &raquo;</li><li>Basic Pattern Search</li>
+          <li>.metaheuristics &raquo;</li>
+          <li>Population-Based Methods &raquo;</li><li>Flying Foxes Algorithm</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -128,15 +129,17 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="basic-pattern-search">Basic Pattern Search</h1>
-<p>This class represents a basic Hooke-Jeeves pattern search algorithm. </p>
-<p>This is a basic black-box optimization function that requires no knowledge of the form of the function to be optimized. The algorithm starts by selecting two sample points (one on each
-side of the current position, +/- the step size) for each dimension. If the best sample point is better than the current position, the algorithm sets the current position to the best sample
-point. Otherwise, the step size halves and the algorithm continues iterating. This method is effective and requires 2n function evaluations for each iteration, where n is the number of dimensions.
-It is also susceptible to getting stuck in local optima.</p>
+                <h1 id="flying-foxes-algorithm">Flying Foxes Algorithm</h1>
+<p>This class represents the flying foxes optimization algorithm developed by Zervoudakis and Tsafarakis. </p>
+<p>This algorithm is a powerful and efficient metaheuristic that takes inspiration from the group behavior of flying foxes during a heatwave. It also contains traits of other common
+algorithms like genetic algorithms, which are utilized during the creation of new foxes. Foxes near the coolest spot are encouraged to explore nearby areas, preserving the breadth
+of the search area. If the most optimal spot currently known gets too crowded, the foxes will die off and produce new ones; this is similar to the overheating that occurs in nature
+when they crowd around cool areas during a heatwave. This algorithm is unique in the fact that it requires no user input for parameters; instead, a fuzzy self-tuning technique is
+utilized to tune the algorithm parameters for each individual fox at the beginning of every iteration. This makes the algorithm simple to deploy even by inexperienced users.
+It also outperforms most population-based metaheuristics in many engineering problems.</p>
 <hr />
 <blockquote>
-<p><em>class</em> optiseek.metaheuristics.<strong>basic_pattern_search</strong>(<em>input_function, initial_guess, find_minimum=True, max_iter=100, sol_threshold=None, store_results=False, max_step_size=1.0</em>)</p>
+<p><em>class</em> optiseek.metaheuristics.<strong>flying_foxes_algorithm</strong>(<em>input_function, b_lower=-10, b_upper=10, find_minimum=True, max_iter=100, sol_threshold=None, max_unchanged_iter=None, store_results=False</em>)</p>
 </blockquote>
 <hr />
 <h3 id="parameters">Parameters</h3>
@@ -150,11 +153,15 @@ It is also susceptible to getting stuck in local optima.</p>
 <tbody>
 <tr>
 <td>input_function : <em>function</em></td>
-<td>Function that the algorithm will use to search for an<br/> optimum. *args will be passed to the function within<br/> the solver.</td>
+<td>Function that the algorithm will use to search for an optimum.<br/> *args will be passed to the function within the solver.</td>
 </tr>
 <tr>
-<td>initial_guess : <em>float, list of floats, or ndarray</em></td>
-<td>The initial guess that the algorithm will start the<br/> search from. Can be a float if the function is<br/> one-dimensional.</td>
+<td>b_lower : <em>float, list of floats, or ndarray</em></td>
+<td>Contains the lower bounds of each dimension in the search <br/>  space. Can be a float if the function is one-dimensional.</td>
+</tr>
+<tr>
+<td>b_upper : <em>float, list of floats, or ndarray</em></td>
+<td>Contains the upper bounds of each dimension in the search <br/>  space. Can be a float if the function is one-dimensional.</td>
 </tr>
 <tr>
 <td>find_minimum : <em>bool</em></td>
@@ -166,15 +173,15 @@ It is also susceptible to getting stuck in local optima.</p>
 </tr>
 <tr>
 <td>sol_threshold : <em>float</em></td>
-<td>If a solution is found better than this threshold, the<br/> iterations stop. <code>None</code> indicates that the algorithm will<br/> not consider this.</td>
+<td>If a solution is found better than this threshold, the iterations<br/> stop. <code>None</code> indicates that the algorithm will not consider this.</td>
+</tr>
+<tr>
+<td>max_unchanged_iter : <em>int</em></td>
+<td>If the solution does not improve after this many iterations,<br/> the solver terminates. <code>None</code> indicates that the algorithm<br/> will not consider this.</td>
 </tr>
 <tr>
 <td>store_results : <em>bool</em></td>
 <td>Choose whether to save intermediate iteration results for<br/> post-processing or not. If true, results will be saved.</td>
-</tr>
-<tr>
-<td>max_step_size : <em>float</em></td>
-<td>Maximum step size that the algorithm can possibly take<br/> for each iteration in each direction.</td>
 </tr>
 </tbody>
 </table>
@@ -227,14 +234,15 @@ It is also susceptible to getting stuck in local optima.</p>
 </ul>
 <hr />
 <h3 id="example">Example</h3>
-<pre><code class="language-python">from optiseek.direct import basic_pattern_search
+<pre><code class="language-python">from optiseek.metaheuristics import flying_foxes_algorithm
 from optiseek.testfunctions import booth
 
 # create an instance of the algorithm, set its parameters, and solve
-alg = basic_pattern_search(booth, [0, 0])  # create instance with booth test function and initial guess [0, 0]
+alg = flying_foxes_algorithm(booth)  # create instance with booth test function
+alg.b_lower = [-10, -10] # define lower bounds
+alg.b_upper = [10, 10] # define upper bounds
 alg.max_iter = 100 # set iteration limit
 alg.sol_threshold = 0.001 # set a solution threshold
-alg.max_step_size = 0.5 # define maximum step size
 
 # execute the algorithm
 alg.solve()
@@ -246,7 +254,7 @@ print(alg.completed_iter)
 </code></pre>
 <hr />
 <h3 id="references">References</h3>
-<p><a href="https://en.wikipedia.org/wiki/Pattern_search_(optimization)">Hooke-Jeeves Pattern Search on Wikipedia</a></p>
+<p><a href="https://link.springer.com/article/10.1007/s00366-021-01554-w">A global optimizer inspired from the survival strategies of flying foxes, by Konstantinos and Tsafarakis</a></p>
               
             </div>
           </div><footer>
@@ -271,10 +279,10 @@ print(alg.completed_iter)
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../cyclic_coordinate_descent/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../mayfly_algorithm/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../enhanced_pattern_search/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../simulated_annealing/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
