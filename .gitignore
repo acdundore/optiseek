@@ -1,0 +1,10 @@
+# ignore all .pkl and .csv files in root folder
+/*.pkl
+/*.csv
+
+# ignore pycharm cache folder
+optiseek/__pycache__/
+optiseek/.idea/
+
+# ignore github pages site directory
+site/
