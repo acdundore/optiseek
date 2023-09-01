@@ -1,4 +1,4 @@
-# optiseek
+![optiseek logo](docs/images/optiseek_logo.png)
 [![Downloads](https://static.pepy.tech/personalized-badge/optiseek?period=total&units=none&left_color=black&right_color=red&left_text=Downloads)](https://pepy.tech/project/optiseek)
 
 An open source collection of single-objective optimization algorithms for multi-dimensional functions.
@@ -24,6 +24,9 @@ from optiseek.testfunctions import booth
 my_algorithm = particle_swarm_optimizer(booth)  # create instance to optimize the booth function
 my_algorithm.b_lower = [-10, -10] # define lower bounds
 my_algorithm.b_upper = [10, 10] # define upper bounds
+my_algorithm.n_particles = 14 # define number of particles
+my_algorithm.max_iter = 20 # define iteration limit
+
 
 # execute the algorithm
 my_algorithm.solve()
