@@ -28,7 +28,6 @@ my_algorithm.b_upper = [10, 10] # define upper bounds
 my_algorithm.n_particles = 14 # define number of particles
 my_algorithm.max_iter = 20 # define iteration limit
 
-
 # execute the algorithm
 my_algorithm.solve()
 
