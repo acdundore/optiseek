@@ -1,4 +1,4 @@
-![optiseek logo](docs/images/optiseek_logo.png)
+![optiseek logo](docs/images/optiseek_logo_small.png)
 [![Downloads](https://static.pepy.tech/personalized-badge/optiseek?period=total&units=none&left_color=black&right_color=red&left_text=Downloads)](https://pepy.tech/project/optiseek)
 
 An open source collection of single-objective optimization algorithms for multi-dimensional functions.
