@@ -171,7 +171,7 @@ class _individual:
         self.best_position = self.position
 
 class _metaheuristic:
-    def __init__(self, input_function, var_list, find_minimum=True, max_iter=100, sol_threshold=None, max_unchanged_iter=None, store_results=False, linspaced_initial_positions=True):
+    def __init__(self, input_function, var_list, find_minimum=True, max_iter=100, sol_threshold=None, max_unchanged_iter=None, linspaced_initial_positions=True, store_results=False, results_filename='results.csv'):
         # initializing variables
         self.input_function = input_function  # function to optimize
         self.var_list = var_list # list of varibles that contain search domains for each dimension
@@ -179,24 +179,24 @@ class _metaheuristic:
         self.max_iter = max_iter # maximum iterations that the algorithm will complete before stopping
         self.sol_threshold = sol_threshold # absolute threshold on the solution; after reaching this point, the algorithm will terminate
         self.max_unchanged_iter = max_unchanged_iter # number of iterations that best location does not change. if reached, algorithm terminates
-        self.store_results = store_results # boolean to store position and value data from all iterations for post-processing; this is off by default
         self.linspaced_initial_positions = linspaced_initial_positions # boolean to get linearly spaced initial positions in each dimension
+        self.store_results = store_results # boolean to store position and value data from all iterations for post-processing; this is off by default
+        self.results_filename = results_filename # csv filename (or path) to store results during iterations in case algorithm is aborted
         self.results = None # initialize stored results as None
         self.best_position = None
         self.best_value = None
         self.completed_iter = 0
 
         # creating arrays to track upper and lower bounds for each dimension's search space
-        # TODO: refactor b_lower and b_upper to have underscores and be internal variables
         b_lower_list = []
         b_upper_list = []
         for v in var_list:
             b_lower_list.append(v.internal_bounds[0])
             b_upper_list.append(v.internal_bounds[1])
 
-        self.b_lower = np.array(b_lower_list)
-        self.b_upper = np.array(b_upper_list)
-
+        self._b_lower = np.array(b_lower_list)
+        self._b_upper = np.array(b_upper_list)
+        self.n_dimensions = len(var_list)
 
     @property
     def input_function(self):
@@ -219,34 +219,6 @@ class _metaheuristic:
             self._var_list = [value]
         else:
             self._var_list = value
-
-    @property
-    def b_lower(self):
-        return self._b_lower
-
-    @b_lower.setter
-    def b_lower(self, value):
-        if isinstance(value, np.ndarray):
-            self._b_lower = value
-        elif type(value) is list:
-            self._b_lower = np.array(value, dtype=float)
-        else:
-            self._b_lower = np.array([value], dtype=float)
-        self.n_dimensions = self._b_lower.size
-
-    @property
-    def b_upper(self):
-        return self._b_upper
-
-    @b_upper.setter
-    def b_upper(self, value):
-        if isinstance(value, np.ndarray):
-            self._b_upper = value
-        elif type(value) is list:
-            self._b_upper = np.array(value, dtype=float)
-        else:
-            self._b_upper = np.array([value], dtype=float)
-        self.n_dimensions = self._b_upper.size
 
     @property
     def find_minimum(self):
@@ -290,6 +262,14 @@ class _metaheuristic:
             self._max_unchanged_iter = value
 
     @property
+    def linspaced_initial_positions(self):
+        return self._linspaced_initial_positions
+
+    @linspaced_initial_positions.setter
+    def linspaced_initial_positions(self, value):
+        self._linspaced_initial_positions = value
+
+    @property
     def store_results(self):
         return self._store_results
 
@@ -298,12 +278,14 @@ class _metaheuristic:
         self._store_results = value
 
     @property
-    def linspaced_initial_positions(self):
-        return self._linspaced_initial_positions
+    def results_filename(self):
+        return self._results_filename
 
-    @linspaced_initial_positions.setter
-    def linspaced_initial_positions(self, value):
-        self._linspaced_initial_positions = value
+    @results_filename.setter
+    def results_filename(self, value):
+        if type(value) is not str or value[-4:] != '.csv':
+            raise TypeError('results_filename must be a string file path with a .csv extension.')
+        self._results_filename = value
 
     @property
     def results(self):
@@ -367,17 +349,17 @@ class _metaheuristic:
                 self.sol_threshold = np.Inf
 
         # checking to ensure that the variable lower and upper bound lists are equal in size, and setting dimension of function
-        if len(self.b_lower) != len(self.b_upper):
+        if len(self._b_lower) != len(self._b_upper):
             raise ValueError("Lower and upper bound lists are not the same length.")
         else:
-            self.n_dimensions = len(self.b_lower)
+            self.n_dimensions = len(self._b_lower)
 
         # if user doesn't want to use the unchanged iteration cap quitting criterion, then set to max iteration length
         if self.max_unchanged_iter is None:
             self.max_unchanged_iter = self.max_iter
 
         # getting bound widths of the dimensions
-        self._bound_widths = self.b_upper - self.b_lower
+        self._bound_widths = self._b_upper - self._b_lower
 
         # setting a dummy initial best function value
         if self.find_minimum:
@@ -389,7 +371,7 @@ class _metaheuristic:
     # guarantees that the search space doesn't miss certain values (especially with ordinal variables)
     def _get_linspaced_initial_positions(self, population_list):
         # create array of linearly spaced values between the bounds along each dimension of the search space
-        linspaced_domain_values = np.linspace(start=self.b_lower, stop=self.b_upper, num=len(population_list), axis=1)
+        linspaced_domain_values = np.linspace(start=self._b_lower, stop=self._b_upper, num=len(population_list), axis=1)
 
         # shuffle the linspaced values along each dimension
         for i in range(self.n_dimensions):
@@ -427,18 +409,21 @@ class _metaheuristic:
         if self.store_results:
             self.results = []
 
-    def _store_current_results(self, population, iteration_count):
+    def _store_individual_results(self, individual, ind_num, iteration_count):
         # store intermediate results for post-processing if specified
         if self.store_results:
             column_names = ['Iteration', 'Individual_Number', 'Function_Value'] + [v.var_name for v in self.var_list]
-            for i, p in enumerate(population):
-                row_vals = [iteration_count + 1, i + 1, p.function_value] + list(self._internal_to_specified(p.position))
-                self.results.append(dict(zip(column_names, row_vals)))
+            row_vals = [iteration_count + 1, ind_num + 1, individual.function_value] + list(self._internal_to_specified(individual.position))
+            self.results.append(dict(zip(column_names, row_vals)))
+
+            # write results to csv if a filename is specified
+            if type(self.results_filename) is str:
+                pd.DataFrame(self.results).to_csv(self.results_filename, index=False)
 
 
 class _local_search(_metaheuristic):
-    def __init__(self, input_function, var_list, find_minimum=True, max_iter=100, sol_threshold=None, max_unchanged_iter=None, store_results=False, sigma_coeff=0.2, neighbor_dim_changes=1, initial_guess=None):
-        super().__init__(input_function=input_function, var_list=var_list, find_minimum=find_minimum, max_iter=max_iter, sol_threshold=sol_threshold, max_unchanged_iter=max_unchanged_iter, store_results=store_results)
+    def __init__(self, input_function, var_list, find_minimum=True, max_iter=100, sol_threshold=None, max_unchanged_iter=None, store_results=False, results_filename='results.csv', sigma_coeff=0.2, neighbor_dim_changes=1, initial_guess=None):
+        super().__init__(input_function=input_function, var_list=var_list, find_minimum=find_minimum, max_iter=max_iter, sol_threshold=sol_threshold, max_unchanged_iter=max_unchanged_iter, store_results=store_results, results_filename=results_filename)
         self.sigma_coeff = sigma_coeff # ratio of bound width to be used for standard deviation in perturbation for that dimension for the candidate solution dimensions
         self.neighbor_dim_changes = neighbor_dim_changes # specifies how many dimensions to mutate for each neighbor candidate generated. if None, will mutatate all dimensions
         self.initial_guess = initial_guess # optional initial guess input from user. if blank, initial guess will be random
@@ -503,14 +488,6 @@ class _local_search(_metaheuristic):
 
         return new_guess
 
-    # define different method to store a single iteration result for local search algorithms
-    def _store_current_results(self, position, function_value, iteration_count):
-        # store intermediate results for post-processing if specified
-        if self.store_results:
-            column_names = ['Iteration', 'Individual_Number', 'Function_Value'] + [v.var_name for v in self.var_list]
-            row_vals = [iteration_count + 1, 1, function_value] + list(self._internal_to_specified(position))
-            self.results.append(dict(zip(column_names, row_vals)))
-
 
 class _particle(_individual):
     def __init__(self, n_dimensions):
@@ -547,7 +524,7 @@ class particle_swarm_optimizer(_metaheuristic):
         Executes the algorithm solution with the current parameters.
 
     """
-    def __init__(self, input_function, var_list, find_minimum=True, max_iter=100, sol_threshold=None, max_unchanged_iter=None, store_results=False, linspaced_initial_positions=True, n_particles=50, weight=0.25, phi_p=1.5, phi_g=1.5, zero_velocity=False):
+    def __init__(self, input_function, var_list, find_minimum=True, max_iter=100, sol_threshold=None, max_unchanged_iter=None, linspaced_initial_positions=True, store_results=False, results_filename='results.csv', n_particles=50, weight=0.25, phi_p=1.5, phi_g=1.5, zero_velocity=False):
         """
         Constructs the necessary attributes for the particle swarm optimizer.
 
@@ -592,7 +569,7 @@ class particle_swarm_optimizer(_metaheuristic):
         zero_velocity : bool, default = False
             Choose whether the particles start off with zero velocity or a random initial velocity. Initial velocities can sometimes be unstable.
         """
-        super().__init__(input_function=input_function, var_list=var_list, find_minimum=find_minimum, max_iter=max_iter, sol_threshold=sol_threshold, max_unchanged_iter=max_unchanged_iter, store_results=store_results, linspaced_initial_positions=linspaced_initial_positions)
+        super().__init__(input_function=input_function, var_list=var_list, find_minimum=find_minimum, max_iter=max_iter, sol_threshold=sol_threshold, max_unchanged_iter=max_unchanged_iter, linspaced_initial_positions=linspaced_initial_positions, store_results=store_results, results_filename=results_filename)
         # properties specific to PSO
         self.n_particles = n_particles # number of particles in the swarm
         self.weight = weight # "weight" of the particles, which acts as an inertia and resists change in velocity
@@ -684,10 +661,10 @@ class particle_swarm_optimizer(_metaheuristic):
             self._get_linspaced_initial_positions(swarm)
         else:
             # initialize a random position for each particle
-            [p.random_position(self.b_lower, self.b_upper) for p in swarm]
+            [p.random_position(self._b_lower, self._b_upper) for p in swarm]
 
         # calculate initial function values and store swarm's best known position and value
-        for p in swarm:
+        for ind_num, p in enumerate(swarm):
             # convert to specified position and calculate the value of the function that is produced by the particle's position
             p.function_value = self.input_function(*self._internal_to_specified(p.position))
             p.best_value = p.function_value
@@ -697,19 +674,19 @@ class particle_swarm_optimizer(_metaheuristic):
                 self.best_position = p.position.copy()
                 self.best_value = p.best_value
 
+            # store intermediate results for post-processing if specified
+            self._store_individual_results(individual=p, ind_num=ind_num, iteration_count=-1)
+
         # initialize the random velocity of the particles if necessary
         if self.zero_velocity is False:
             for p in swarm:
-                p.random_velocity(self.b_lower, self.b_upper)
-
-        # store intermediate results for post-processing if specified
-        self._store_current_results(swarm, -1)
+                p.random_velocity(self._b_lower, self._b_upper)
 
         # carry out the particle swarm optimization iterations
         iteration_count = 0
         unchanged_iterations = 0
         while self._check_stopping_criteria(iteration_count, unchanged_iterations, self.best_value):
-            for p in swarm:
+            for ind_num, p in enumerate(swarm):
                 # update velocity
                 r_p = np.random.uniform(0, 1, size=(self.n_dimensions,))
                 r_g = np.random.uniform(0, 1, size=(self.n_dimensions,))
@@ -730,8 +707,8 @@ class particle_swarm_optimizer(_metaheuristic):
                         self.best_value = p.best_value
                         unchanged_iterations = 0
 
-            # store intermediate results for post-processing if specified
-            self._store_current_results(swarm, iteration_count)
+                # store intermediate results for post-processing if specified
+                self._store_individual_results(individual=p, ind_num=ind_num, iteration_count=iteration_count)
 
             # increment iteration counters
             iteration_count += 1
@@ -778,7 +755,7 @@ class firefly_algorithm(_metaheuristic):
     solve()
         Executes the algorithm solution with the current parameters.
     """
-    def __init__(self, input_function, var_list, find_minimum=True, max_iter=100, sol_threshold=None, max_unchanged_iter=None, store_results=False, linspaced_initial_positions=True, n_fireflies=50, beta=1.0, alpha=0.05, gamma=0.5):
+    def __init__(self, input_function, var_list, find_minimum=True, max_iter=100, sol_threshold=None, max_unchanged_iter=None, linspaced_initial_positions=True, store_results=False, results_filename='results.csv', n_fireflies=50, beta=1.0, alpha=0.05, gamma=0.5):
         """
         Constructs the necessary attributes for the algorithm.
 
@@ -820,7 +797,7 @@ class firefly_algorithm(_metaheuristic):
         gamma : float, default = 1.0
             Social coefficient in [0.01, 1]. Higher value indicates that the fireflies are less attracted to each other.
         """
-        super().__init__(input_function=input_function, var_list=var_list, find_minimum=find_minimum, max_iter=max_iter, sol_threshold=sol_threshold, max_unchanged_iter=max_unchanged_iter, store_results=store_results, linspaced_initial_positions=linspaced_initial_positions)
+        super().__init__(input_function=input_function, var_list=var_list, find_minimum=find_minimum, max_iter=max_iter, sol_threshold=sol_threshold, max_unchanged_iter=max_unchanged_iter, linspaced_initial_positions=linspaced_initial_positions, store_results=store_results, results_filename=results_filename)
         self.n_fireflies = n_fireflies # number of fireflies in the population
         self.beta = beta # this is a coefficient on the visibility of the fireflies; linearly related to visibility
         self.alpha = alpha # coefficient for the random walk contribution
@@ -901,14 +878,14 @@ class firefly_algorithm(_metaheuristic):
             self._get_linspaced_initial_positions(population)
         else:
             # initialize a random position for each firefly
-            [f.random_position(self.b_lower, self.b_upper) for f in population]
+            [f.random_position(self._b_lower, self._b_upper) for f in population]
 
         # begin iterations
         iteration_count = 0
         unchanged_iterations = 0
         while self._check_stopping_criteria(iteration_count, unchanged_iterations, self.best_value):
             # calculate function values of each firefly
-            for f in population:
+            for ind_num, f in enumerate(population):
                 f.function_value = self.input_function(*self._internal_to_specified(f.position))
 
                 # update the best known function value and position if necessary
@@ -917,8 +894,8 @@ class firefly_algorithm(_metaheuristic):
                     self.best_position = f.position.copy()
                     unchanged_iterations = 0
 
-            # store intermediate results for post-processing if specified
-            self._store_current_results(population, iteration_count - 1)
+                # store intermediate results for post-processing if specified
+                self._store_individual_results(individual=f, ind_num=ind_num, iteration_count=iteration_count - 1)
 
             # Compare brightness and adjust positions when necessary
             for a in population:
@@ -926,9 +903,6 @@ class firefly_algorithm(_metaheuristic):
                     if self._first_is_better(b.function_value, a.function_value):
                         r = np.linalg.norm(b.position - a.position)
                         a.position += self.beta * np.exp(-self.gamma * r**2) * (b.position - a.position) + self.alpha * self._bound_widths * np.random.normal(0, 1, size=(self.n_dimensions,))
-
-            # store intermediate results for post-processing if specified
-            self._store_current_results(population, iteration_count)
 
             # increment iteration counter
             iteration_count += 1
@@ -1004,7 +978,7 @@ class differential_evolution(_metaheuristic):
     solve()
         Executes the algorithm solution with the current parameters.
     """
-    def __init__(self, input_function, var_list, find_minimum=True, max_iter=100, sol_threshold=None, max_unchanged_iter=None, store_results=False, linspaced_initial_positions=True, n_agents=50, weight=0.2, p_crossover=0.5):
+    def __init__(self, input_function, var_list, find_minimum=True, max_iter=100, sol_threshold=None, max_unchanged_iter=None, linspaced_initial_positions=True, store_results=False, results_filename='results.csv', n_agents=50, weight=0.2, p_crossover=0.5):
         """
         Constructs the necessary attributes for the algorithm.
 
@@ -1043,7 +1017,7 @@ class differential_evolution(_metaheuristic):
         p_crossover : float, default = 0.5
             Probability in [0, 1] that a gene crossover will occur for each dimension.
         """
-        super().__init__(input_function=input_function, var_list=var_list, find_minimum=find_minimum, max_iter=max_iter, sol_threshold=sol_threshold, max_unchanged_iter=max_unchanged_iter, store_results=store_results, linspaced_initial_positions=linspaced_initial_positions)
+        super().__init__(input_function=input_function, var_list=var_list, find_minimum=find_minimum, max_iter=max_iter, sol_threshold=sol_threshold, max_unchanged_iter=max_unchanged_iter, linspaced_initial_positions=linspaced_initial_positions, store_results=store_results, results_filename=results_filename)
         self.n_agents = n_agents # number of agents in the algorithm; must be at least 4
         self.weight = weight # differential weight; must be in [0, 2]
         self.p_crossover = p_crossover # probability of crossover; must be between 0 and 1
@@ -1112,23 +1086,23 @@ class differential_evolution(_metaheuristic):
             self._get_linspaced_initial_positions(population)
         else:
             # initialize a random position for each agent
-            [a.random_position(self.b_lower, self.b_upper) for a in population]
+            [a.random_position(self._b_lower, self._b_upper) for a in population]
 
         # calculate initial function values of agents' positions and update best position and value if necessary
-        for a in population:
+        for ind_num, a in enumerate(population):
             a.function_value = self.input_function(*self._internal_to_specified(a.position))
             if self._first_is_better(a.function_value, self.best_value):
                 self.best_position = a.position.copy()
                 self.best_value = a.function_value
 
-        # store intermediate results for post-processing if specified
-        self._store_current_results(population, -1)
+            # store intermediate results for post-processing if specified
+            self._store_individual_results(individual=a, ind_num=ind_num, iteration_count=-1)
 
         # begin optimization
         iteration_count = 0
         unchanged_iterations = 0
         while self._check_stopping_criteria(iteration_count, unchanged_iterations, self.best_value):
-            for a in population:
+            for ind_num, a in enumerate(population):
                 # pick 3 random agents from the population
                 agent_1, agent_2, agent_3 = np.random.choice(population, size=3, replace=False)
 
@@ -1155,8 +1129,8 @@ class differential_evolution(_metaheuristic):
                         self.best_value = a.function_value
                         unchanged_iterations = 0
 
-            # store intermediate results for post-processing if specified
-            self._store_current_results(population, iteration_count)
+                # store intermediate results for post-processing if specified
+                self._store_individual_results(individual=a, ind_num=ind_num, iteration_count=iteration_count)
 
             # increment iteration counter
             iteration_count += 1
@@ -1228,7 +1202,7 @@ class mayfly_algorithm(_metaheuristic):
     solve()
         Executes the algorithm solution with the current parameters.
     """
-    def __init__(self, input_function, var_list, find_minimum=True, max_iter=100, sol_threshold=None, max_unchanged_iter=None, store_results=False, linspaced_initial_positions=True, n_mayflies=50, beta=0.7, gravity=0.6, alpha_cog=0.5, alpha_soc=1.5, alpha_attract=1.5, nuptial_coeff=0.05):
+    def __init__(self, input_function, var_list, find_minimum=True, max_iter=100, sol_threshold=None, max_unchanged_iter=None, linspaced_initial_positions=True, store_results=False, results_filename='results.csv', n_mayflies=50, beta=0.7, gravity=0.6, alpha_cog=0.5, alpha_soc=1.5, alpha_attract=1.5, nuptial_coeff=0.05):
         """
         Constructs the necessary attributes for the algorithm.
 
@@ -1279,7 +1253,7 @@ class mayfly_algorithm(_metaheuristic):
         nuptial_coeff : float, default = 0.05
             Nuptial coefficient in [0, 0.4], a multiplier on bound widths for each dimension used for the male and female random walks.
         """
-        super().__init__(input_function=input_function, var_list=var_list, find_minimum=find_minimum, max_iter=max_iter, sol_threshold=sol_threshold, max_unchanged_iter=max_unchanged_iter, store_results=store_results, linspaced_initial_positions=linspaced_initial_positions)
+        super().__init__(input_function=input_function, var_list=var_list, find_minimum=find_minimum, max_iter=max_iter, sol_threshold=sol_threshold, max_unchanged_iter=max_unchanged_iter, linspaced_initial_positions=linspaced_initial_positions, store_results=store_results, results_filename=results_filename)
         self.n_mayflies = n_mayflies # number of mayflies in the algorithm; must be at least 4, and it will be evenly split between males and females
         self.beta = beta # visibility coefficient in [0.1, 1]
         self.gravity = gravity # gravity coefficient that controls the intertia from previous velocities in [0, 1]
@@ -1448,29 +1422,30 @@ class mayfly_algorithm(_metaheuristic):
             self._get_linspaced_initial_positions(total_population)
         else:
             # initialize a random position for each mayfly
-            [m.random_position(self.b_lower, self.b_upper) for m in male_population]
-            [f.random_position(self.b_lower, self.b_upper) for f in female_population]
+            [m.random_position(self._b_lower, self._b_upper) for m in male_population]
+            [f.random_position(self._b_lower, self._b_upper) for f in female_population]
 
         # calculate initial function values of mayflies' positions and store the best position and value. also store the best male position separately
+        ind_num = 0
         for m in male_population:
             m.function_value = self.input_function(*self._internal_to_specified(m.position))
             if self._first_is_better(m.function_value, self.best_value):
                 self.best_position = m.position.copy()
                 self.best_value = m.function_value
+            self._store_individual_results(individual=m, ind_num=ind_num, iteration_count=-1)
+            ind_num += 1
         for f in female_population:
             f.function_value = self.input_function(*self._internal_to_specified(f.position))
             if self._first_is_better(f.function_value, self.best_value):
                 self.best_position = f.position.copy()
                 self.best_value = f.function_value
+            self._store_individual_results(individual=f, ind_num=ind_num, iteration_count=-1)
+            ind_num += 1
 
         # rank the male and female mayflies by function values, and record top male position
         male_population = self._rank_mayflies(male_population)
         female_population = self._rank_mayflies(female_population)
         best_male_position = male_population[0].position.copy()
-
-        # store intermediate results for post-processing if specified
-        total_population = male_population + female_population
-        self._store_current_results(total_population, -1)
 
         # start solution iterations
         iteration_count = 0
@@ -1478,6 +1453,7 @@ class mayfly_algorithm(_metaheuristic):
         while self._check_stopping_criteria(iteration_count, unchanged_iterations, self.best_value):
             # update velocities, positions, and function values of male mayflies
             current_male_rank = 0
+            ind_num = 0
             for m in male_population:
                 # check if it is a "top male", hardcoded as the top 5% of male function values
                 if current_male_rank <= np.ceil(len(male_population) * 0.05):
@@ -1492,6 +1468,10 @@ class mayfly_algorithm(_metaheuristic):
                 m.position += m.velocity
                 m.function_value = self.input_function(*self._internal_to_specified(m.position))
                 current_male_rank += 1
+
+                # store intermediate results for post-processing if specified
+                self._store_individual_results(individual=m, ind_num=ind_num, iteration_count=iteration_count)
+                ind_num += 1
 
             # update velocities, positions, and function values of female mayflies
             current_female_rank = 0
@@ -1512,6 +1492,10 @@ class mayfly_algorithm(_metaheuristic):
                 f.position += f.velocity
                 f.function_value = self.input_function(*self._internal_to_specified(f.position))
                 current_female_rank += 1
+
+                # store intermediate results for post-processing if specified
+                self._store_individual_results(individual=f, ind_num=ind_num, iteration_count=iteration_count)
+                ind_num += 1
 
             # rank the male and female mayflies by function values
             male_population = self._rank_mayflies(male_population)
@@ -1544,10 +1528,6 @@ class mayfly_algorithm(_metaheuristic):
                 self.best_position = top_male_or_female.position.copy()
                 self.best_value = top_male_or_female.function_value
                 unchanged_iterations = 0
-
-            # store intermediate results for post-processing if specified
-            total_population = male_population + female_population
-            self._store_current_results(total_population, iteration_count)
 
             # increment iterations
             iteration_count += 1
@@ -1711,7 +1691,7 @@ class flying_foxes_algorithm(_metaheuristic):
     solve()
         Executes the algorithm solution with the current parameters.
     """
-    def __init__(self, input_function, var_list, find_minimum=True, max_iter=100, sol_threshold=None, max_unchanged_iter=None, store_results=False, linspaced_initial_positions=True):
+    def __init__(self, input_function, var_list, find_minimum=True, max_iter=100, sol_threshold=None, max_unchanged_iter=None, linspaced_initial_positions=True, store_results=False, results_filename='results.csv'):
         """
         Constructs the necessary attributes for the algorithm.
 
@@ -1741,7 +1721,7 @@ class flying_foxes_algorithm(_metaheuristic):
         store_results : bool, default = False
             Choose whether to save results or not. If true, results will be saved to the stored_positions and stored_values properties.
         """
-        super().__init__(input_function=input_function, var_list=var_list, find_minimum=find_minimum, max_iter=max_iter, sol_threshold=sol_threshold, max_unchanged_iter=max_unchanged_iter, store_results=store_results, linspaced_initial_positions=linspaced_initial_positions)
+        super().__init__(input_function=input_function, var_list=var_list, find_minimum=find_minimum, max_iter=max_iter, sol_threshold=sol_threshold, max_unchanged_iter=max_unchanged_iter, linspaced_initial_positions=linspaced_initial_positions, store_results=store_results, results_filename=results_filename)
 
     @property
     def n_foxes(self):
@@ -1831,17 +1811,17 @@ class flying_foxes_algorithm(_metaheuristic):
             self._get_linspaced_initial_positions(population)
         else:
             # initialize a random position for each fox
-            [ff.random_position(self.b_lower, self.b_upper) for ff in population]
+            [ff.random_position(self._b_lower, self._b_upper) for ff in population]
 
         # calculate initial function values of flying foxes' positions
-        for ff in population:
+        for ind_num, ff in enumerate(population):
             ff.function_value = self.input_function(*self._internal_to_specified(ff.position))
 
             # intialize previous function value as same
             ff.previous_function_value = ff.function_value
 
-        # store intermediate results for post-processing if specified
-        self._store_current_results(population, -1)
+            # store intermediate results for post-processing if specified
+            self._store_individual_results(individual=ff, ind_num=ind_num, iteration_count=-1)
 
         # create the survival list
         SL, SL_positions = self._update_SL(population, NL)
@@ -1870,14 +1850,21 @@ class flying_foxes_algorithm(_metaheuristic):
             delta_2 = m[1] * delta_max
             delta_3 = m[2] * delta_max
 
+            # resetting ind_num for the current iteration
+            ind_num = 0
+
             # tune parameters and update positions for all flying foxes
             for ff in population:
                 ff.tune_parameters(self.find_minimum, delta_1, delta_2, delta_3, delta_max, coolest_value, a_crisps, pa_crisps)
                 is_far = ff.update_position(self.input_function, self.find_minimum, coolest_position, coolest_value, population, delta_1, delta_3, self._internal_to_specified)
+                self._store_individual_results(individual=ff, ind_num=ind_num, iteration_count=iteration_count)
+                ind_num += 1
 
                 # if fox is "too far", kill the fox and use survival list to replace
                 if is_far:
                     self._new_fox_from_SL(ff, NL, SL_positions)
+                    self._store_individual_results(individual=ff, ind_num=ind_num, iteration_count=iteration_count)
+                    ind_num += 1
 
                 # update the survival list and coolest and hottest positions
                 SL, SL_positions = self._update_SL(population, NL)
@@ -1898,6 +1885,8 @@ class flying_foxes_algorithm(_metaheuristic):
             if nc > 1 and np.remainder(len(foxes_in_coolest_spot), 2) != 0:
                 ff = foxes_in_coolest_spot[0]
                 self._new_fox_from_SL(ff, NL, SL_positions)
+                self._store_individual_results(individual=ff, ind_num=ind_num, iteration_count=iteration_count)
+                ind_num += 1
                 del foxes_in_coolest_spot[0]
 
             # replace some foxes that die from "smothering" with either SL or reproduction
@@ -1910,7 +1899,11 @@ class flying_foxes_algorithm(_metaheuristic):
                     # determine method of replacement with 50% probability
                     if np.random.uniform(0, 1) > 0.5:
                         self._new_fox_from_SL(ff_1, NL, SL_positions)
+                        self._store_individual_results(individual=ff_1, ind_num=ind_num, iteration_count=iteration_count)
+                        ind_num += 1
                         self._new_fox_from_SL(ff_2, NL, SL_positions)
+                        self._store_individual_results(individual=ff_2, ind_num=ind_num, iteration_count=iteration_count)
+                        ind_num += 1
                     else:
                         # pick 2 random flying foxes from the population
                         random_1, random_2 = np.random.choice(population, size=2, replace=False)
@@ -1918,7 +1911,11 @@ class flying_foxes_algorithm(_metaheuristic):
                         ff_1.position = L * random_1.position + (1 - L) * random_2.position
                         ff_2.position = L * random_2.position + (1 - L) * random_1.position
                         ff_1.function_value = self.input_function(*self._internal_to_specified(ff_1.position))
+                        self._store_individual_results(individual=ff_1, ind_num=ind_num, iteration_count=iteration_count)
+                        ind_num += 1
                         ff_2.function_value = self.input_function(*self._internal_to_specified(ff_2.position))
+                        self._store_individual_results(individual=ff_2, ind_num=ind_num, iteration_count=iteration_count)
+                        ind_num += 1
                         ff_1.previous_function_value = ff_1.function_value
                         ff_2.previous_function_value = ff_2.function_value
 
@@ -1935,9 +1932,6 @@ class flying_foxes_algorithm(_metaheuristic):
                 self.best_position = coolest_position.copy()
                 self.best_value = coolest_value
                 unchanged_iterations = 0
-
-            # store intermediate results for post-processing if specified
-            self._store_current_results(population, iteration_count)
 
             # increment iterations
             iteration_count += 1
@@ -1980,7 +1974,7 @@ class simulated_annealing(_local_search):
     solve()
         Executes the algorithm solution with the current parameters.
     """
-    def __init__(self, input_function, var_list, find_minimum=True, max_iter=100, sol_threshold=None, max_unchanged_iter=None, sigma_coeff=0.2, neighbor_dim_changes=1, initial_guess=None, store_results=False, start_temperature=10, alpha=0.9):
+    def __init__(self, input_function, var_list, find_minimum=True, max_iter=100, sol_threshold=None, max_unchanged_iter=None, sigma_coeff=0.2, neighbor_dim_changes=1, initial_guess=None, store_results=False, results_filename='results.csv', start_temperature=10, alpha=0.9):
         """
         Constructs the necessary attributes for the algorithm.
 
@@ -2025,7 +2019,7 @@ class simulated_annealing(_local_search):
         initial_guess : list or ndarray, default = None
             Initial guess used in the solution process. Leave as None to start with a random initial guess.
         """
-        super().__init__(input_function=input_function, var_list=var_list, find_minimum=find_minimum, max_iter=max_iter, sol_threshold=sol_threshold, max_unchanged_iter=max_unchanged_iter, store_results=store_results, sigma_coeff=sigma_coeff, neighbor_dim_changes=neighbor_dim_changes, initial_guess=initial_guess)
+        super().__init__(input_function=input_function, var_list=var_list, find_minimum=find_minimum, max_iter=max_iter, sol_threshold=sol_threshold, max_unchanged_iter=max_unchanged_iter, store_results=store_results, results_filename=results_filename, sigma_coeff=sigma_coeff, neighbor_dim_changes=neighbor_dim_changes, initial_guess=initial_guess)
         self.start_temperature = start_temperature # temperature that the algorithm starts at
         self.alpha = alpha # coefficient for rate of decay of temperature
 
@@ -2076,7 +2070,7 @@ class simulated_annealing(_local_search):
 
         # either create random initial guess within bounds or start with user's initial guess, then get the corresponding function value
         if self.initial_guess is None:
-            self.current_position = np.random.uniform(self.b_lower, self.b_upper)
+            self.current_position = np.random.uniform(self._b_lower, self._b_upper)
         else:
             self.current_position = self.initial_guess
 
@@ -2087,7 +2081,10 @@ class simulated_annealing(_local_search):
         self.best_value = self.current_value
 
         # store intermediate results for post-processing of specified
-        self._store_current_results(self.current_position, self.current_value, -1)
+        dummy_individual = _individual(n_dimensions=self.n_dimensions)
+        dummy_individual.position = self.current_position
+        dummy_individual.function_value = self.current_value
+        self._store_individual_results(dummy_individual, ind_num=1, iteration_count=-1)
 
         # begin solution iteration
         iteration_count = 0
@@ -2121,7 +2118,10 @@ class simulated_annealing(_local_search):
             T = T * self.alpha
 
             # store intermediate results for post-processing of specified
-            self._store_current_results(self.current_position, self.current_value, iteration_count)
+            dummy_individual = _individual(n_dimensions=self.n_dimensions)
+            dummy_individual.position = self.current_position
+            dummy_individual.function_value = self.current_value
+            self._store_individual_results(dummy_individual, ind_num=1, iteration_count=iteration_count)
 
             # increment the iteration counters
             iteration_count += 1
@@ -2290,7 +2290,7 @@ class tabu_search(_local_search):
 
         # either create random initial guess within bounds or start with user's initial guess, then get the corresponding function value
         if self.initial_guess is None:
-            self.current_position = np.random.uniform(self.b_lower, self.b_upper)
+            self.current_position = np.random.uniform(self._b_lower, self._b_upper)
         else:
             self.current_position = self.initial_guess
 

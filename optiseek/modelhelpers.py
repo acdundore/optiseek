@@ -236,7 +236,13 @@ def penalty_constraints(input_function, constraint_dict, find_minimum=True, p_qu
 
     Returns
     -------
-    A function representing the input objective function with the constraints applied as penalties to the function value.
+    penalized_function : function
+        A function representing the input objective function with the constraints applied as penalties to the function value.
+        Inputs to this function are the exact same as the input function.
+
+    check_constraints : function
+        A function that, when passed some inputs, returns a list of booleans that represent whether each constraint was
+        satisfied (True) or broken (False). Inputs to this function are the exact same as the input function.
     """
     def penalized_function(*args):
         # initialize the output as the plain function output
@@ -266,11 +272,30 @@ def penalty_constraints(input_function, constraint_dict, find_minimum=True, p_qu
 
         return output
 
-    return penalized_function
+    def check_constraints(*args):
+        # define list to contain booleans showing if consraints are satisfied or not
+        constraint_checks = []
 
+        # iterate through constraints and check if the given arguments satisfy them
+        for g, g_type in constraint_dict.items():
+            # get constrant function output
+            g_output = g(*args)
 
+            # check to see if the constraint is satisfied
+            if g_type == "<":
+                constraint_checks.append(g_output < 0)
+            elif g_type == "<=":
+                constraint_checks.append(g_output <= 0)
+            elif g_type == ">":
+                constraint_checks.append(g_output > 0)
+            elif g_type == ">=":
+                constraint_checks.append(g_output >= 0)
+            else:
+                constraint_checks.append(g_output == 0)
 
+        return constraint_checks
 
+    return penalized_function, check_constraints
 
 
 
