@@ -285,8 +285,8 @@ class _metaheuristic:
 
         return output_bool
 
-    # method to run at the beginning of the main solve() method in order to run some checks
-    def _initialize_solve(self, find_minimum, max_iter=None, max_function_evals=None, max_unchanged_iter=None, sol_threshold=None):
+    # method to run at the beginning of the main optimize() method in order to run some checks
+    def _initialize_optimization(self, find_minimum, max_iter=None, max_function_evals=None, max_unchanged_iter=None, sol_threshold=None):
         # assign function inputs to protected attributes of the class for easy accessibility
         self._find_minimum = find_minimum
         self._max_iter = max_iter
@@ -490,14 +490,14 @@ class particle_swarm_optimizer(_metaheuristic):
         Number of iterations completed during the solution process.
 
     stored_positions : ndarray
-        Positions for each particle for each iteration after the solver is finished. Set to None if user does not choose to store results.
+        Positions for each particle for each iteration after the optimization is finished. Set to None if user does not choose to store results.
 
     stored_values : ndarray
         Function values for each member of the population for each iteration. Set to None if user does not choose to store results.
 
     Methods
     -------
-    solve()
+    optimize()
         Executes the algorithm solution with the current parameters.
 
     """
@@ -622,7 +622,7 @@ class particle_swarm_optimizer(_metaheuristic):
             raise TypeError("zero_velocity must be a boolean.")
         self._zero_velocity = value
 
-    def solve(self, find_minimum, max_iter=None, max_function_evals=None, max_unchanged_iter=None, sol_threshold=None):
+    def optimize(self, find_minimum, max_iter=None, max_function_evals=None, max_unchanged_iter=None, sol_threshold=None):
         """
         Executes the solution iterations for the algorithm.
 
@@ -630,8 +630,8 @@ class particle_swarm_optimizer(_metaheuristic):
         -------
         None
         """
-        # initialize solve
-        self._initialize_solve(find_minimum, max_iter=max_iter, max_function_evals=max_function_evals, max_unchanged_iter=max_unchanged_iter, sol_threshold=sol_threshold)
+        # initialize optimization
+        self._initialize_optimization(find_minimum, max_iter=max_iter, max_function_evals=max_function_evals, max_unchanged_iter=max_unchanged_iter, sol_threshold=sol_threshold)
 
         # check to make sure that max_function_evals is greater than the number of particles
         if self._max_function_evals is not None and self._max_function_evals <= self._n_particles:
@@ -736,14 +736,14 @@ class firefly_algorithm(_metaheuristic):
         Number of iterations completed during the solution process.
 
     stored_positions : ndarray
-        Positions for each particle for each iteration after the solver is finished. Set to None if user does not choose to store results.
+        Positions for each particle for each iteration after the optimization is finished. Set to None if user does not choose to store results.
 
     stored_values : ndarray
         Function values for each member of the population for each iteration. Set to None if user does not choose to store results.
 
     Methods
     -------
-    solve()
+    optimize()
         Executes the algorithm solution with the current parameters.
     """
     def __init__(self, input_function, var_list, linspaced_initial_positions=True, results_filename=None, n_fireflies=50, beta=1.0, alpha=0.05, gamma=0.5):
@@ -852,7 +852,7 @@ class firefly_algorithm(_metaheuristic):
         else:
             self._gamma = value
 
-    def solve(self, find_minimum, max_iter=None, max_function_evals=None, max_unchanged_iter=None, sol_threshold=None):
+    def optimize(self, find_minimum, max_iter=None, max_function_evals=None, max_unchanged_iter=None, sol_threshold=None):
         """
         Executes the solution iterations for the algorithm.
 
@@ -860,8 +860,8 @@ class firefly_algorithm(_metaheuristic):
         -------
         None
         """
-        # initialize solve
-        self._initialize_solve(find_minimum, max_iter=max_iter, max_function_evals=max_function_evals, max_unchanged_iter=max_unchanged_iter, sol_threshold=sol_threshold)
+        # initialize optimization
+        self._initialize_optimization(find_minimum, max_iter=max_iter, max_function_evals=max_function_evals, max_unchanged_iter=max_unchanged_iter, sol_threshold=sol_threshold)
 
         # check to make sure that max_function_evals is greater than the number of fireflies
         if self._max_function_evals is not None and self._max_function_evals <= self.n_fireflies:
@@ -970,14 +970,14 @@ class differential_evolution(_metaheuristic):
         Number of iterations completed during the solution process.
 
     stored_positions : ndarray
-        Positions for each particle for each iteration after the solver is finished. Set to None if user does not choose to store results.
+        Positions for each particle for each iteration after the optimization is finished. Set to None if user does not choose to store results.
 
     stored_values : ndarray
         Function values for each member of the population for each iteration. Set to None if user does not choose to store results.
 
     Methods
     -------
-    solve()
+    optimize()
         Executes the algorithm solution with the current parameters.
     """
     def __init__(self, input_function, var_list, linspaced_initial_positions=True, results_filename=None, n_agents=50, weight=0.2, p_crossover=0.5):
@@ -1070,7 +1070,7 @@ class differential_evolution(_metaheuristic):
         else:
             self._p_crossover = value
 
-    def solve(self, find_minimum, max_iter=None, max_function_evals=None, max_unchanged_iter=None, sol_threshold=None):
+    def optimize(self, find_minimum, max_iter=None, max_function_evals=None, max_unchanged_iter=None, sol_threshold=None):
         """
         Executes the solution iterations for the algorithm.
 
@@ -1078,8 +1078,8 @@ class differential_evolution(_metaheuristic):
         -------
         None
         """
-        # initialize solve
-        self._initialize_solve(find_minimum, max_iter=max_iter, max_function_evals=max_function_evals, max_unchanged_iter=max_unchanged_iter, sol_threshold=sol_threshold)
+        # initialize optimization
+        self._initialize_optimization(find_minimum, max_iter=max_iter, max_function_evals=max_function_evals, max_unchanged_iter=max_unchanged_iter, sol_threshold=sol_threshold)
 
         # check to make sure that max_function_evals is greater than the number of agents
         if self._max_function_evals is not None and self._max_function_evals <= self.n_agents:
@@ -1206,14 +1206,14 @@ class mayfly_algorithm(_metaheuristic):
         Number of iterations completed during the solution process.
 
     stored_positions : ndarray
-        Positions for each particle for each iteration after the solver is finished. Set to None if user does not choose to store results.
+        Positions for each particle for each iteration after the optimization is finished. Set to None if user does not choose to store results.
 
     stored_values : ndarray
         Function values for each member of the population for each iteration. Set to None if user does not choose to store results.
 
     Methods
     -------
-    solve()
+    optimize()
         Executes the algorithm solution with the current parameters.
     """
     def __init__(self, input_function, var_list, linspaced_initial_positions=True, results_filename=None, n_mayflies=50, beta=0.7, gravity=0.6, alpha_cog=0.5, alpha_soc=1.5, alpha_attract=1.5, nuptial_coeff=0.05):
@@ -1419,7 +1419,7 @@ class mayfly_algorithm(_metaheuristic):
 
         return [male_offspring, female_offspring]
 
-    def solve(self, find_minimum, max_iter=None, max_function_evals=None, max_unchanged_iter=None, sol_threshold=None):
+    def optimize(self, find_minimum, max_iter=None, max_function_evals=None, max_unchanged_iter=None, sol_threshold=None):
         """
         Executes the solution iterations for the algorithm.
 
@@ -1427,8 +1427,8 @@ class mayfly_algorithm(_metaheuristic):
         -------
         None
         """
-        # initialize solve
-        self._initialize_solve(find_minimum, max_iter=max_iter, max_function_evals=max_function_evals, max_unchanged_iter=max_unchanged_iter, sol_threshold=sol_threshold)
+        # initialize optimization
+        self._initialize_optimization(find_minimum, max_iter=max_iter, max_function_evals=max_function_evals, max_unchanged_iter=max_unchanged_iter, sol_threshold=sol_threshold)
 
         # check to make sure that max_function_evals is greater than the number of mayflies
         if self._max_function_evals is not None and self._max_function_evals <= self.n_mayflies:
@@ -1726,14 +1726,14 @@ class flying_foxes_algorithm(_metaheuristic):
         Number of iterations completed during the solution process.
 
     stored_positions : ndarray
-        Positions for each particle for each iteration after the solver is finished. Set to None if user does not choose to store results.
+        Positions for each particle for each iteration after the optimization is finished. Set to None if user does not choose to store results.
 
     stored_values : ndarray
         Function values for each member of the population for each iteration. Set to None if user does not choose to store results.
 
     Methods
     -------
-    solve()
+    optimize()
         Executes the algorithm solution with the current parameters.
     """
     def __init__(self, input_function, var_list, linspaced_initial_positions=True, results_filename=None):
@@ -1821,7 +1821,7 @@ class flying_foxes_algorithm(_metaheuristic):
         ff.previous_function_value = ff.function_value
         ff.function_value = self.input_function(*self._internal_to_specified(ff.position))
 
-    def solve(self, find_minimum, max_iter=None, max_function_evals=None, max_unchanged_iter=None, sol_threshold=None):
+    def optimize(self, find_minimum, max_iter=None, max_function_evals=None, max_unchanged_iter=None, sol_threshold=None):
         """
         Executes the solution iterations for the algorithm.
 
@@ -1829,8 +1829,8 @@ class flying_foxes_algorithm(_metaheuristic):
         -------
         None
         """
-        # initialize solution process and calculate number of foxes
-        self._initialize_solve(find_minimum, max_iter=max_iter, max_function_evals=max_function_evals, max_unchanged_iter=max_unchanged_iter, sol_threshold=sol_threshold)
+        # initialize optimization process and calculate number of foxes
+        self._initialize_optimization(find_minimum, max_iter=max_iter, max_function_evals=max_function_evals, max_unchanged_iter=max_unchanged_iter, sol_threshold=sol_threshold)
         self.n_foxes = int(np.ceil(10 + 2 * np.sqrt(self.n_dimensions)))
 
         # check to make sure that max_function_evals is greater than the number of foxes
@@ -2042,14 +2042,14 @@ class simulated_annealing(_local_search):
         Number of iterations completed during the solution process.
 
     stored_positions : ndarray
-        Positions for each particle for each iteration after the solver is finished. Set to None if user does not choose to store results.
+        Positions for each particle for each iteration after the optimization is finished. Set to None if user does not choose to store results.
 
     stored_values : ndarray
         Function values for each member of the population for each iteration. Set to None if user does not choose to store results.
 
     Methods
     -------
-    solve()
+    optimize()
         Executes the algorithm solution with the current parameters.
     """
     def __init__(self, input_function, var_list, sigma_coeff=0.2, neighbor_dim_changes=1, initial_guess=None, results_filename=None, start_temperature=10, alpha=0.9):
@@ -2132,7 +2132,7 @@ class simulated_annealing(_local_search):
     def current_position(self, value):
         self._current_position = value
 
-    def solve(self, find_minimum, max_iter=None, max_function_evals=None, max_unchanged_iter=None, sol_threshold=None):
+    def optimize(self, find_minimum, max_iter=None, max_function_evals=None, max_unchanged_iter=None, sol_threshold=None):
         """
         Executes the solution iterations for the algorithm.
 
@@ -2140,8 +2140,8 @@ class simulated_annealing(_local_search):
         -------
         None
         """
-        # initialize solve
-        self._initialize_solve(find_minimum, max_iter=max_iter, max_function_evals=max_function_evals, max_unchanged_iter=max_unchanged_iter, sol_threshold=sol_threshold)
+        # initialize optimization
+        self._initialize_optimization(find_minimum, max_iter=max_iter, max_function_evals=max_function_evals, max_unchanged_iter=max_unchanged_iter, sol_threshold=sol_threshold)
 
         # check to make sure that max_function_evals is a positive integer
         if self._max_function_evals is not None and type(self._max_function_evals) is not int and self._max_function_evals < 1:
