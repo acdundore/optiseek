@@ -166,6 +166,19 @@ class _individual:
         self.position = np.random.uniform(b_lower, b_upper, size=(b_lower.size,))
         self.best_position = self.position
 
+    def bounce_on_boundary(self, b_lower, b_upper):
+        # check to find dimensions that are out of bound
+        out_of_bounds = np.logical_or(self.position < b_lower, self.position > b_upper)
+        if np.any(out_of_bounds):
+            # modify the velocity to reverse (bounce) in the dimensions that are out of bounds
+            velocity_modifier = np.ones(shape=self.n_dimensions)
+            velocity_modifier[out_of_bounds] = -1
+            self.velocity = self.velocity * velocity_modifier
+
+            # bound the positions by dimensional domain limits
+            self.position = np.maximum(np.minimum(self.position, b_upper), b_lower)
+
+
 class _metaheuristic:
     def __init__(self, input_function, var_list, linspaced_initial_positions=True, results_filename=None):
         # initializing variables
@@ -685,6 +698,9 @@ class particle_swarm_optimizer(_metaheuristic):
                 # update position
                 p.position += p.velocity
 
+                # apply boundary conditions if applicable
+                p.bounce_on_boundary(self._b_lower, self._b_upper)
+
                 # convert to specified position and calculate new function value
                 p.function_value = self.input_function(*self._internal_to_specified(p.position))
 
@@ -885,8 +901,12 @@ class firefly_algorithm(_metaheuristic):
         iteration_count = 0
         unchanged_iterations = 0
         while self._check_stopping_criteria(iteration_count, unchanged_iterations, self.best_value):
-            # calculate function values of each firefly
+            # iterate through fireflies
             for ind_num, f in enumerate(population):
+                # apply boundary conditions if applicable
+                f.bounce_on_boundary(self._b_lower, self._b_upper)
+
+                # calculate function values of each firefly
                 f.function_value = self.input_function(*self._internal_to_specified(f.position))
 
                 # update the best known function value and position if necessary
@@ -1129,6 +1149,9 @@ class differential_evolution(_metaheuristic):
                         a.potential_position[i] = agent_1.position[i] + self.weight * (agent_2.position[i] - agent_3.position[i])
                     else:
                         a.potential_position[i] = a.position[i]
+
+                # apply boundary conditions if applicable
+                a.bounce_on_boundary(self._b_lower, self._b_upper)
 
                 # evaluate agent's potential position and replace current position if it is better
                 a.potential_function_value = self.input_function(*self._internal_to_specified(a.potential_position))
@@ -1494,8 +1517,13 @@ class mayfly_algorithm(_metaheuristic):
                 # update the velocity of the current male
                 m.update_velocity(best_male_position, is_top_male, self.beta, self.alpha_cog, self.alpha_soc, self.nuptial_coeff, self._bound_widths, self.gravity)
 
-                # update the position and evaluate new function value
+                # update the position
                 m.position += m.velocity
+
+                # apply boundary conditions if applicable
+                m.bounce_on_boundary(self._b_lower, self._b_upper)
+
+                # evaluate new function value
                 m.function_value = self.input_function(*self._internal_to_specified(m.position))
                 current_male_rank += 1
 
@@ -1520,8 +1548,13 @@ class mayfly_algorithm(_metaheuristic):
                 # update the velocity
                 f.update_velocity(male_of_interest.position, is_attracted, self.alpha_attract, self.beta, self.fl, self._bound_widths, self.gravity)
 
-                # update the position and evaluate new function value
+                # update the position
                 f.position += f.velocity
+
+                # apply boundary conditions if applicable
+                f.bounce_on_boundary(self._b_lower, self._b_upper)
+
+                # evaluate new function value
                 f.function_value = self.input_function(*self._internal_to_specified(f.position))
                 current_female_rank += 1
 
@@ -1625,7 +1658,7 @@ class _flying_fox(_individual):
     def pa(self, value):
         self._pa = value
 
-    def update_position(self, input_function, find_minimum, coolest_position, coolest_value, population, delta_1, delta_3, _internal_to_specified):
+    def update_position(self, input_function, find_minimum, coolest_position, coolest_value, population, delta_1, delta_3, _internal_to_specified, b_lower, b_upper):
         # set boolean to indicate that the fox is far from the coolest spot and needs to be replaced
         is_far = False
 
@@ -1636,6 +1669,9 @@ class _flying_fox(_individual):
 
             # generate new position
             new_position = self.position + self.a * r * (coolest_position - self.position)
+
+            # apply boundary conditions if applicable
+            self.bounce_on_boundary(b_lower, b_upper)
         else:
             # use an array of mutation probabilities to determine parameters to be mutated if the fox is close to suffocation
             mutation_probabilities = np.random.rand(self.n_dimensions,)
@@ -1654,6 +1690,9 @@ class _flying_fox(_individual):
 
             # generate new position, using mutation boolean to indicate dimensions to be changed
             new_position = self.position + mutation_bool * (r1 * (coolest_position - self.position) + r2 * (xR1 - xR2))
+
+            # apply boundary conditions if applicable
+            self.bounce_on_boundary(b_lower, b_upper)
 
         # update position of the fox if the new_position is better
         new_function_value = input_function(*_internal_to_specified(new_position))
@@ -1917,7 +1956,7 @@ class flying_foxes_algorithm(_metaheuristic):
             # tune parameters and update positions for all flying foxes
             for ff in population:
                 ff.tune_parameters(self._find_minimum, delta_1, delta_2, delta_3, delta_max, coolest_value, a_crisps, pa_crisps)
-                is_far = ff.update_position(self.input_function, self._find_minimum, coolest_position, coolest_value, population, delta_1, delta_3, self._internal_to_specified)
+                is_far = ff.update_position(self.input_function, self._find_minimum, coolest_position, coolest_value, population, delta_1, delta_3, self._internal_to_specified, self._b_lower, self._b_upper)
                 self._store_individual_results(individual=ff, ind_num=ind_num, iteration_count=iteration_count)
                 ind_num += 1
                 if self._check_max_function_evals():
