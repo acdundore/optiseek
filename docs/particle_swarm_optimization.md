@@ -7,7 +7,7 @@ Their movement is influenced by their own previous positions, the best known pos
 
 ---
 
-> *class* optiseek.metaheuristics.**particle_swarm_optimizer**(*input_function, b_lower=-10, b_upper=10, find_minimum=True, max_iter=100, sol_threshold=None, max_unchanged_iter=None, store_results=False, n_particles=50, weight=0.25, phi_p=1, phi_g=2, zero_velocity=True*)
+> *class* optiseek.metaheuristics.**particle_swarm_optimizer**(*input_function, var_list, linspaced_initial_positions=True, results_filename=None, n_particles=None, weight=0.35, phi_p=1.5, phi_g=1.5, zero_velocity=False*)
 
 ---
 
@@ -16,18 +16,14 @@ Their movement is influenced by their own previous positions, the best known pos
 | Parameter | Description |
 |---|---|
 | input_function : *function* | Function that the algorithm will use to search for an optimum.<br/> \*args will be passed to the function within the solver. |
-| b_lower : *float, list of floats, or ndarray* | Contains the lower bounds of each dimension in the search <br/>  space. Can be a float if the function is one-dimensional. |
-| b_upper : *float, list of floats, or ndarray* | Contains the upper bounds of each dimension in the search <br/>  space. Can be a float if the function is one-dimensional. |
-| find_minimum : *bool* | Indicates whether the optimimum of interest is a minimum<br/> or maximum. If true, looks for minimum. If false,<br/> looks for maximum. |
-| max_iter : *int* | Maximum number of iterations. If reached, the algorithm<br/> terminates. |
-| sol_threshold : *float* | If a solution is found better than this threshold, the iterations<br/> stop. `None` indicates that the algorithm will not consider this. |
-| max_unchanged_iter : *int* | If the solution does not improve after this many iterations,<br/> the solver terminates. `None` indicates that the algorithm<br/> will not consider this. |
-| store_results : *bool* | Choose whether to save intermediate iteration results for<br/> post-processing or not. If true, results will be saved. |
+| var_list : *list of variables* | List of variables (see variable types) to define the search space.<br/> These correspond to the arguments of the objective function<br/> and must be in the exact same order. |
+| linspaced_initial_positions : *bool* | If true, creates a linearly spaced set of points in each search<br/> dimension, and the initial positions of the population are set to<br/> mutually exclusive combinations of these points. This guarantees<br/> that there will be no empty spots in a single dimension. If false,<br/> random initial positions are chosen. |
+| results_filename : *string* | If a file name is passed (ending in '.csv'), the results will be written<br/> to this file after each function evaluation. This can noticeably slow<br/> down solution iterations for quick objective functions. For greedy<br/> functions, it can be beneficial to do this in case the script is<br/> interrupted. |
 | n_particles : *int* | Number of particles to use in the particle swarm population. |
 | weight : *float* | Weight coefficient in [0, 1]. Lower weight gives the particles<br/> less momentum. |
 | phi_p : *float* | Cognitive coefficient in [0, 3]. Higher value indicates that the<br/> particles are drawn more towards their own best known<br/> position. |
 | phi_g : *float* | Social coefficient in [0, 3]. Higher value indicates that the<br/> particles are drawn more towards the swarm's collectively best<br/> known position. |
-| zero_velocity : *bool* | Choose whether the particles start off with zero velocity or<br/> a random initial velocity. Initial velocities can sometimes<br/> cause divergence. |
+| zero_velocity : *bool* | Choose whether the particles start off with zero velocity or<br/> a random initial velocity. |
 
 ---
 
@@ -35,26 +31,29 @@ Their movement is influenced by their own previous positions, the best known pos
 
 | Attribute | Description |
 |---|---|
-| best_position : *ndarray* | Most optimal position found during the solution iterations. |
+| best_position : *dict* | Dictionary containing the most optimal position found during the solution<br/> iterations, with variable names as keys and corresponding position values<br/> as values. |
 | best_value : *float* | Most optimal function value found during the solution iterations. |
 | completed_iter : *int* | Number of iterations completed during the solution process. |
-| stored_positions : *ndarray* | Positions for each member of the population for each iteration after<br/> the solver is finished. Set to `None` if user does not choose to store results.<br/> The results are placed in an array in the following format:<br/> `[iteration, population member, position in each dimension]` |
-| stored_values : *ndarray* | Function values for each member of the population for each iteration.<br/> Set to `None` if user does not choose to store results. The results are<br/> placed in an array in the following format:<br/> `[iteration, population member, function value]` |
+| results : *pandas df* | DataFrame of results throughout the iterations. For each iteration, the<br/> function value and position for each member of the population are provided. |
 
 ---
 
 ### Methods
 
-```python
-.solve()
-```
+**.optimize**(*find_minimum, max_iter=None, max_function_evals=None, max_unchanged_iter=None, sol_threshold=None*)
 	
-Executes the algorithm solution with the current parameters. Results will be stored to the class attributes. If the user opted to store intermediate results, these will also be stored.
+> Executes the algorithm solution with the current parameters. 
+Results will be stored to the class attributes. 
+Either *max_iter* or *max_function_evals* must be specified in order to prevent an endless optimization loop.
+If any of the criteria are met during optimization, the process is terminated.
 
-- Parameters
-	- None
-- Returns
-	- None
+> | Argument | Description |
+|---|---|
+| find_minimum : *bool* | Indicates whether the optimimum of interest is a minimum or<br/> maximum. If true, looks for minimum. If false, looks for maximum. |
+| max_iter : *int* | Maximum number of iterations. The algorithm will terminate after<br/> completing this many iterations. `None` indicates that the algorithm<br/> will not consider this. |
+| max_function_evals : *int* | Maximum number of function evaluations. The algorithm will<br/> terminate after completing this many function evaluations. This is<br/> a preferable metric for greedy algorithms. `None` indicates that the algorithm will not consider this. |
+| max_unchanged_iter : *int* | If the solution does not improve after this many iterations,<br/> the optimization terminates. `None` indicates that the algorithm<br/> will not consider this. |
+| sol_threshold : *float* | If a solution is found better than this threshold, the iterations<br/> stop. `None` indicates that the algorithm will not consider this. |
 
 ---
 
@@ -64,24 +63,28 @@ Executes the algorithm solution with the current parameters. Results will be sto
 from optiseek.metaheuristics import particle_swarm_optimizer
 from optiseek.testfunctions import booth
 
-# create an instance of the algorithm, set its parameters, and solve
-alg = particle_swarm_optimizer(booth)  # create instance with booth test function
-alg.b_lower = [-10, -10] # define lower bounds
-alg.b_upper = [10, 10] # define upper bounds
-alg.max_iter = 100 # set iteration limit
-alg.sol_threshold = 0.001 # set a solution threshold
-alg.n_particles = 20 # define population size
-alg.weight = 0.3 # set weight
-alg.phi_p = 0.5 # set cognitive coefficient
-alg.phi_g = 1.5 # set social coefficient
+# define a list of variables and their domains for the objective function
+var_list = [
+	var_float('x1', [-10, 10]),
+	var_float('x2', [-10, 10])
+]	
 
-# execute the algorithm
-alg.solve()
+# create an instance of the algorithm to optimize the booth test function and set its parameters
+alg = particle_swarm_optimizer(booth, var_list)
+
+# define stopping criteria and optimize
+alg.optimize(find_minimum=True, max_iter=10, sol_threshold=0.05)
 
 # show the results!
-print(alg.best_value)
-print(alg.best_position)
-print(alg.completed_iter)
+print(f'best_value = {alg.best_value:.5f}')
+print(f'best_position = {alg.best_position}')
+print(f'n_iter = {alg.completed_iter}')
+```
+
+```profile
+best_value = 0.04470
+best_position = {'x1': 1.050827859446013, 'x2': 2.86984154026157}
+n_iter = 8
 ```
 
 ---
