@@ -514,7 +514,7 @@ class particle_swarm_optimizer(_metaheuristic):
         Executes the algorithm solution with the current parameters.
 
     """
-    def __init__(self, input_function, var_list, linspaced_initial_positions=True, results_filename=None, n_particles=None, weight=0.25, phi_p=1.5, phi_g=1.5, zero_velocity=False):
+    def __init__(self, input_function, var_list, linspaced_initial_positions=True, results_filename=None, n_particles=None, weight=0.35, phi_p=1.5, phi_g=1.5, zero_velocity=False):
         """
         Constructs the necessary attributes for the particle swarm optimizer.
 
@@ -726,7 +726,7 @@ class particle_swarm_optimizer(_metaheuristic):
         self.completed_iter = iteration_count
 
         # convert best position to specified coordinates
-        self.best_position = self._internal_to_specified(self.best_position)
+        self.best_position = dict(zip([v.var_name for v in self.var_list], self._internal_to_specified(self.best_position)))
 
         # store results in a dataframe
         self.results = pd.DataFrame(self.results)
@@ -762,7 +762,7 @@ class firefly_algorithm(_metaheuristic):
     optimize()
         Executes the algorithm solution with the current parameters.
     """
-    def __init__(self, input_function, var_list, linspaced_initial_positions=True, results_filename=None, n_fireflies=50, beta=1.0, alpha=0.05, gamma=0.5):
+    def __init__(self, input_function, var_list, linspaced_initial_positions=True, results_filename=None, n_fireflies=None, beta=1.0, alpha=0.05, gamma=0.5):
         """
         Constructs the necessary attributes for the algorithm.
 
@@ -935,7 +935,7 @@ class firefly_algorithm(_metaheuristic):
         self.completed_iter = iteration_count
 
         # convert best position to specified coordinates
-        self.best_position = self._internal_to_specified(self.best_position)
+        self.best_position = dict(zip([v.var_name for v in self.var_list], self._internal_to_specified(self.best_position)))
 
         # store results in a dataframe
         self.results = pd.DataFrame(self.results)
@@ -1000,7 +1000,7 @@ class differential_evolution(_metaheuristic):
     optimize()
         Executes the algorithm solution with the current parameters.
     """
-    def __init__(self, input_function, var_list, linspaced_initial_positions=True, results_filename=None, n_agents=50, weight=0.2, p_crossover=0.5):
+    def __init__(self, input_function, var_list, linspaced_initial_positions=True, results_filename=None, n_agents=None, weight=0.8, p_crossover=0.9):
         """
         Constructs the necessary attributes for the algorithm.
 
@@ -1178,7 +1178,7 @@ class differential_evolution(_metaheuristic):
         self.completed_iter = iteration_count
 
         # convert best position to specified coordinates
-        self.best_position = self._internal_to_specified(self.best_position)
+        self.best_position = dict(zip([v.var_name for v in self.var_list], self._internal_to_specified(self.best_position)))
 
         # store results in a dataframe
         self.results = pd.DataFrame(self.results)
@@ -1239,7 +1239,7 @@ class mayfly_algorithm(_metaheuristic):
     optimize()
         Executes the algorithm solution with the current parameters.
     """
-    def __init__(self, input_function, var_list, linspaced_initial_positions=True, results_filename=None, n_mayflies=50, beta=0.7, gravity=0.6, alpha_cog=0.5, alpha_soc=1.5, alpha_attract=1.5, nuptial_coeff=0.05):
+    def __init__(self, input_function, var_list, linspaced_initial_positions=True, results_filename=None, n_mayflies=None, beta=0.7, gravity=0.6, alpha_cog=0.5, alpha_soc=1.5, alpha_attract=1.5, nuptial_coeff=0.05):
         """
         Constructs the necessary attributes for the algorithm.
 
@@ -1616,7 +1616,7 @@ class mayfly_algorithm(_metaheuristic):
         self.completed_iter = iteration_count
 
         # convert best position to specified coordinates
-        self.best_position = self._internal_to_specified(self.best_position)
+        self.best_position = dict(zip([v.var_name for v in self.var_list], self._internal_to_specified(self.best_position)))
 
         # store results in a dataframe
         self.results = pd.DataFrame(self.results)
@@ -2059,7 +2059,7 @@ class flying_foxes_algorithm(_metaheuristic):
         self.completed_iter = iteration_count
 
         # convert best position to specified coordinates
-        self.best_position = self._internal_to_specified(self.best_position)
+        self.best_position = dict(zip([v.var_name for v in self.var_list], self._internal_to_specified(self.best_position)))
 
         # store results in a dataframe
         self.results = pd.DataFrame(self.results)
@@ -2091,7 +2091,7 @@ class simulated_annealing(_local_search):
     optimize()
         Executes the algorithm solution with the current parameters.
     """
-    def __init__(self, input_function, var_list, sigma_coeff=0.2, neighbor_dim_changes=1, initial_guess=None, results_filename=None, start_temperature=10, alpha=0.9):
+    def __init__(self, input_function, var_list, results_filename=None, initial_guess=None, sigma_coeff=0.2, neighbor_dim_changes=1, start_temperature=10, alpha=0.90):
         """
         Constructs the necessary attributes for the algorithm.
 
@@ -2256,7 +2256,7 @@ class simulated_annealing(_local_search):
         self.completed_iter = iteration_count
 
         # convert best position to specified coordinates
-        self.best_position = self._internal_to_specified(self.best_position)
+        self.best_position = dict(zip([v.var_name for v in self.var_list], self._internal_to_specified(self.best_position)))
 
         # store results in a dataframe
         self.results = pd.DataFrame(self.results)

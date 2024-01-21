@@ -2,7 +2,8 @@
 
 This class represents a standard particle swarm optimization algorithm, originally developed by Kennedy and Eberhart. 
 
-This algorithm is based on swarm behavior commonly observed in nature. A population of particles is introduced to traverse the search space. 
+This algorithm is based on swarm behavior commonly observed in nature. 
+A population of particles is introduced to traverse the search space. 
 Their movement is influenced by their own previous positions, the best known position of the swarm, and some stochastic velocity.
 
 ---
@@ -13,13 +14,15 @@ Their movement is influenced by their own previous positions, the best known pos
 
 ### Parameters
 
+All parameters are also class attributes and may be modified after instantiation.
+
 | Parameter | Description |
 |---|---|
 | input_function : *function* | Function that the algorithm will use to search for an optimum.<br/> \*args will be passed to the function within the solver. |
 | var_list : *list of variables* | List of variables (see variable types) to define the search space.<br/> These correspond to the arguments of the objective function<br/> and must be in the exact same order. |
 | linspaced_initial_positions : *bool* | If true, creates a linearly spaced set of points in each search<br/> dimension, and the initial positions of the population are set to<br/> mutually exclusive combinations of these points. This guarantees<br/> that there will be no empty spots in a single dimension. If false,<br/> random initial positions are chosen. |
 | results_filename : *string* | If a file name is passed (ending in '.csv'), the results will be written<br/> to this file after each function evaluation. This can noticeably slow<br/> down solution iterations for quick objective functions. For greedy<br/> functions, it can be beneficial to do this in case the script is<br/> interrupted. |
-| n_particles : *int* | Number of particles to use in the particle swarm population. |
+| n_particles : *int* | Number of particles to use in the particle swarm population. If<br/> set to `None`, the population size will be based on the heuristic<br/> 10 + 2 \* sqrt(n_dims), where n_dims is the dimensionality of<br/> the search space. This is typically sufficient to explore the<br/> whole search space. |
 | weight : *float* | Weight coefficient in [0, 1]. Lower weight gives the particles<br/> less momentum. |
 | phi_p : *float* | Cognitive coefficient in [0, 3]. Higher value indicates that the<br/> particles are drawn more towards their own best known<br/> position. |
 | phi_g : *float* | Social coefficient in [0, 3]. Higher value indicates that the<br/> particles are drawn more towards the swarm's collectively best<br/> known position. |
@@ -51,7 +54,7 @@ If any of the criteria are met during optimization, the process is terminated.
 |---|---|
 | find_minimum : *bool* | Indicates whether the optimimum of interest is a minimum or<br/> maximum. If true, looks for minimum. If false, looks for maximum. |
 | max_iter : *int* | Maximum number of iterations. The algorithm will terminate after<br/> completing this many iterations. `None` indicates that the algorithm<br/> will not consider this. |
-| max_function_evals : *int* | Maximum number of function evaluations. The algorithm will<br/> terminate after completing this many function evaluations. This is<br/> a preferable metric for greedy algorithms. `None` indicates that the algorithm will not consider this. |
+| max_function_evals : *int* | Maximum number of function evaluations. Must be greater than the<br/> size of the population (i.e. complete at least one iteration). The<br/> algorithm will terminate after completing this many function<br/> evaluations. This is a preferable metric for greedy algorithms. <br/>`None` indicates that the algorithm will not consider this. |
 | max_unchanged_iter : *int* | If the solution does not improve after this many iterations,<br/> the optimization terminates. `None` indicates that the algorithm<br/> will not consider this. |
 | sol_threshold : *float* | If a solution is found better than this threshold, the iterations<br/> stop. `None` indicates that the algorithm will not consider this. |
 

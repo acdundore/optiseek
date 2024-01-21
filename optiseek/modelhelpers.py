@@ -1,5 +1,6 @@
 import itertools
 import numpy as np
+import pandas as pd
 
 class parameter_grid_search:
     """
@@ -31,10 +32,10 @@ class parameter_grid_search:
 
     Methods
     -------
-    solve()
+    search()
         Executes the parameter grid search process and stores the results in the class attributes.
     """
-    def __init__(self, algorithm, input_function, param_options, show_progress=False):
+    def __init__(self, algorithm, input_function, var_list, param_grid, optimize_options, show_progress=False):
         """
         Constructs the necessary attributes for the parameter grid search.
 
@@ -46,26 +47,33 @@ class parameter_grid_search:
         input_function : function
             Function object for the algorithm to optimize.
 
-        param_options : dict
+        var_list : list of variables
+            List of all variable objects to define their names and domains in the search space.
+            This is the same list you would pass to the optimization algorithm class.
+
+        param_grid : dict
             Dictionary containing the grid of parameters to be explored with the parameter names (strings) as keys
             and a list of parameter values as values. All permutations of parameters in this dict will be tested.
             For inputs that would normally be in a list (like the search bounds on a 2+ dimensional function, for example),
             place that list inside another list. For any parameters not specified, the default will be used.
 
-            Example of possible param_options dict for a 2D function using the simulated annealing algorithm:
-            param_options = {
-                "initial_guess": [[8, 4]],
-                "b_lower": [[-10, -10]],
-                "b_upper": [[10, 10]],
-                "sigma_coeff": [0.05, 0.1, 0.2, 0.3],
-                "max_iter": [50, 100, 500],
-                "start_temperature": [20, 10, 5, 2],
-                "alpha": [0.85, 0.93, 0.99],
-                "neighbor_dim_changes": [1, 2]
-                }
+            Example of possible param_grid dict for a 2D function using the simulated annealing algorithm:
+            param_grid = {
+                'n_particles': [10],
+                'weight': [0.20, 0.35, 0.50],
+                'phi_p': [1.0, 1.5, 2.0],
+                'phi_g': [1.0, 1.5, 2.0],
+                'zero_velocity': [True, False]
+            }
 
-            Note that the initial_guess, b_lower, and b_upper parameters will use the same values for every permutation,
-            but must be double bracketed due to the function being 2D.
+        optimize_options : dict
+            Dictionary containing the kwargs for the optimize() method of the algorithm.
+
+            An example could be:
+            optimize_options = {
+                'find_minimum': True,
+                'max_function_evals': 75
+            }
 
         show_progress : bool, default = False
             Boolean to indicate whether the grid search will print progress to the console as the solve continues.
@@ -73,17 +81,15 @@ class parameter_grid_search:
             of parameter inputs, this can be useful to see how much longer the solver has left.
         """
         self.algorithm = algorithm # instance of an algorithm object to be investigated
-        self.param_options = param_options # dictionary of parameter options used to create parameter dictionary
         self.input_function = input_function # input function to be optimized
+        self.var_list = var_list # variable list and search space
+        self.param_grid = param_grid  # dictionary of parameter options used to create parameter dictionary
+        self.optimize_options = optimize_options  # dictionary of optimizer options passed to the optimizer
         self.show_progress = show_progress
 
         # creating all permutations of parameters possible from user's choices
-        keys, values = zip(*self.param_options.items())
-        self.param_permutations = [dict(zip(keys, v)) for v in itertools.product(*values)]
-
-        # setting lengths of output lists
-        self.permutation_positions = [None] * len(self.param_permutations)
-        self.permutation_values = [None] * len(self.param_permutations)
+        keys, values = zip(*self.param_grid.items())
+        self._param_permutations = [dict(zip(keys, v)) for v in itertools.product(*values)]
 
     # TODO: create internal method to check that parameters all exist
 
@@ -96,20 +102,36 @@ class parameter_grid_search:
         self._algorithm = value
 
     @property
-    def param_options(self):
-        return self._param_options
-
-    @param_options.setter
-    def param_options(self, value):
-        self._param_options = value
-
-    @property
     def input_function(self):
         return self._input_function
 
     @input_function.setter
     def input_function(self, value):
         self._input_function = value
+
+    @property
+    def var_list(self):
+        return self._var_list
+
+    @var_list.setter
+    def var_list(self, value):
+        self._var_list = value
+
+    @property
+    def param_grid(self):
+        return self._param_grid
+
+    @param_grid.setter
+    def param_grid(self, value):
+        self._param_grid = value
+
+    @property
+    def optimize_options(self):
+        return self._optimize_options
+
+    @optimize_options.setter
+    def optimize_options(self, value):
+        self._optimize_options = value
 
     @property
     def show_progress(self):
@@ -120,28 +142,12 @@ class parameter_grid_search:
         self._show_progress = value
 
     @property
-    def param_permutations(self):
-        return self._param_permutations
+    def results(self):
+        return self._results
 
-    @param_permutations.setter
-    def param_permutations(self, value):
-        self._param_permutations = value
-
-    @property
-    def permutation_values(self):
-        return self._permutation_values
-
-    @permutation_values.setter
-    def permutation_values(self, value):
-        self._permutation_values = value
-
-    @property
-    def permutation_positions(self):
-        return self._permutation_positions
-
-    @permutation_positions.setter
-    def permutation_positions(self, value):
-        self._permutation_positions = value
+    @results.setter
+    def results(self, value):
+        self._results = value
 
     @property
     def best_parameters(self):
@@ -167,29 +173,40 @@ class parameter_grid_search:
     def best_value(self, value):
         self._best_value = value
 
-    def solve(self):
-        n_permutations = len(self.param_permutations)
+    def search(self):
+        # initialize the results to be an empty list
+        self.results = []
+
+        # setting initial best values and for first iteration
+        if self.optimize_options['find_minimum']:
+            self.best_value = np.Inf
+        else:
+            self.best_value = -np.Inf
+
+        # iterate through each permutation of parameters
+        n_permutations = len(self._param_permutations)
         for i in range(n_permutations):
             # get current keyword arguments and apply them to the algorithm
-            current_kwargs = self.param_permutations[i].copy()
-            current_alg = self.algorithm(self.input_function, **current_kwargs)
-
-            # setting initial best values and for first iteration
-            if i == 0:
-                if current_alg.find_minimum == True:
-                    self.best_value = np.Inf
-                else:
-                    self.best_value = -np.Inf
+            current_kwargs = self._param_permutations[i].copy()
+            current_alg = self.algorithm(self.input_function, self.var_list, **current_kwargs)
 
             # solve the algorithm with the current keyword arguments
-            current_alg.solve()
+            current_alg.optimize(**self.optimize_options)
 
-            # store the best position and value for this permutation of keyword arguments
-            self.permutation_values[i] = current_alg.best_value
-            self.permutation_positions[i] = current_alg.best_position
+            # store the algorithm parameters and best position found for this iteration
+            current_results = dict()
+            for d in [current_kwargs, current_alg.best_position]:
+                for key, val in d.items():
+                    current_results[key] = val
+
+            # store the best function value found for this iteration
+            current_results['best_value'] = current_alg.best_value
+
+            # append these results to the main results list
+            self.results.append(current_results)
 
             # replacing best performing parameter values if necessary
-            if (current_alg.find_minimum == True and current_alg.best_value < self.best_value) or (current_alg.find_minimum == False and current_alg.best_value > self.best_value):
+            if (self.optimize_options['find_minimum'] == True and current_alg.best_value < self.best_value) or (self.optimize_options['find_minimum'] == False and current_alg.best_value > self.best_value):
                 self.best_parameters = current_kwargs.copy()
                 self.best_value = current_alg.best_value
                 self.best_position = current_alg.best_position
@@ -198,6 +215,9 @@ class parameter_grid_search:
             if self.show_progress:
                 current_progress = "Iteration %d of %d complete." % (i+1, n_permutations)
                 print(current_progress)
+
+        # turn the results into a dataframe and sort
+        self.results = pd.DataFrame(self.results).sort_values(by='best_value', ascending=self.optimize_options['find_minimum'], ignore_index=True)
 
 
 def penalty_constraints(input_function, constraint_dict, find_minimum=True, p_quadratic=1, p_count=0):

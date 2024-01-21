@@ -18,7 +18,7 @@ in order for the constraint to be properly enforced. In situations like this, it
 Applying penalty constraints does not guarantee that the optimization algorithm will converge at a point within the constraints. Oftentimes, the penalty multipliers
 must be tuned by the user to find out what works best.
 
-Parameters of the `optiseek` *penalty_constraints* function allow the user to control the magnitude of each of these penalties. 
+Parameters of the `Optiseek` *penalty_constraints* function allow the user to control the magnitude of each of these penalties. 
 Combinations of both of these penalty types can be applied at once with a single *penalty_constraints* function call. A value of zero will result in
 no penalty of that type being applied to the returned penalized function. A higher value increases the step height for count penalties and increases the slope for
 quadratic penalties. This tool will work for any function, whether the user would like to find the minimum or maximum.
@@ -47,6 +47,7 @@ quadratic penalties. This tool will work for any function, whether the user woul
 | Returns | Description |
 |---|---|
 | penalized_function : *function* | A function representing the input objective function with the<br/> constraints applied as penalties to the function value. |
+| check_constraints : *function* | A function that, when passed some inputs, returns a list of booleans<br/> that represent whether each constraint was satisfied (True) or<br/> broken (False). Inputs to this function are the exact same as<br/> the input function. |
 
 ---
 
@@ -74,10 +75,10 @@ def g1(x1, x2, x3):
     return 1 - (x2 ** 3 * x3) / (71785 * x1 ** 4)
 
 def g2(x1, x2, x3):
-    return (4 * x2**2 - x1 * x2) / (12566 * (x1**3 * x2 - x1**4)) + (1 / (5108 * x1**2)) - 1
+    return (4 * x2 ** 2 - x1 * x2) / (12566 * (x1 ** 3 * x2 - x1 ** 4)) + 1 / (5108 * x1 ** 2) - 1
 
 def g3(x1, x2, x3):
-    return 1 - (140.45 * x1) / (x2**3 * x3)
+    return 1 - (140.45 * x1) / (x2 ** 3 * x3)
 
 def g4(x1, x2, x3):
     return (x1 + x2) / 1.5 - 1
@@ -89,33 +90,53 @@ spring_constraint_dict = {g1: "<=",
                           g4: "<="}
 
 # create a constrained version of the original function to be optimized
-spring_problem_constrained = penalty_constraints(spring_problem,
-                                                 spring_constraint_dict,
-                                                 find_minimum=True,
-                                                 p_count=0,
-                                                 p_quadratic=2)
+spring_problem_const, const_check = penalty_constraints(spring_problem,
+                                                        spring_constraint_dict,
+                                                        find_minimum=True,
+                                                        p_quadratic=5000,
+                                                        p_count=0)
 
-# instantiate an optimization algorithm with the constrained function
-alg = flying_foxes_algorithm(spring_problem_constrained)
-alg.b_lower = [0.05, 0.25, 2.0]
-alg.b_upper = [2.0, 1.3, 15.0]
-alg.max_iter = 200
+# define variable list and search domain
+var_list = [
+    var_float('x1', [0.05, 2.0]),
+    var_float('x2', [0.25, 1.3]),
+    var_float('x3', [2.0, 15.0])
+]
 
-# solve and show your results!
-alg.solve()
-print(alg.best_value)
-print(alg.best_position)
-print(alg.completed_iter)
+# instantiate an optimization algorithm with the constrained function and search domain
+alg = flying_foxes_algorithm(spring_problem_const, var_list)
+
+# optimize and check to make sure constraints are satisfied
+alg.optimize(find_minimum=True, max_iter=500)
+constraint_bools = const_check(*alg.best_position.values())
+
+# show the results!
+print(f'best_value = {alg.best_value:.5f}')
+print(f'best_position = {alg.best_position}')
+print(f'n_iter = {alg.completed_iter}')
+print(f'constraint check: {constraint_bools}')
 ```
 
-With this code, it can be found that the best solution is approximately:
+```profile
+best_value = 0.01267
+best_position = {'x1': 0.0517568175037568, 'x2': 0.35827540281247405, 'x3': 11.201295780064102}
+n_iter = 500
+constraint check: [True, True, True, True]
+```
 
-*f(0.05269, 0.3834, 9.7789) = 0.012579*
+With this code, the best found solution found was approximately [0.0517, 0.358, 11.20].
+A very high penalty constraint value was necessary, as the constraints made the search space much more complex.
+We also used the constraint checking function created by the `penalty_constraints` helper to verify that our constraints were indeed satisfied with the best solution.
+Note that this is not guaranteed to be the global optimum.
 
 ##### Example 2:
 
-In this generic problem, the constraints are a bit more difficult. The *constraint_dict* parameter for the penalty constraints function requires the 
-constraints to be compared to zero.  We must re-arrange the constraint equations to ensure this.
+In this generic problem, the constraints require a bit more work to implement. 
+The *constraint_dict* parameter for the penalty constraints function requires the constraints to be compared to zero.  
+We must re-arrange the constraint equations to ensure this. 
+Also, we can assume an upper bound on the search domain of 20 for each variable.
+
+*Note: This is a linear problem, and could be easily solved with linear programming as well. However, it is a good example for re-arranging constraint functions.*
 
 Minimize:  
 *f(x, y, z) = -2x - 3y - 4z*
@@ -135,7 +156,7 @@ from optiseek.modelhelpers import penalty_constraints
 from optiseek.metaheuristics import flying_foxes_algorithm
 
 # create the function definition
-def example_function(x, y, z):
+def linear_function(x, y, z):
     return -2 * x - 3 * y - 4 * z
 
 # create the constraints as functions
@@ -145,33 +166,44 @@ def g1(x, y, z):
 def g2(x, y, z):
     return 2 * x + 5 * y + 3 * z - 15
 
-def g3(x, y, z):
-    return min(x, y, z)
-
 # create the constraint dictionary to define the constraint type
-constraint_dict = {g1: "<=", g2: "<=", g3: ">="}
+constraint_dict = {g1: "<=", g2: "<="}
 
 # create a constrained version of the original function to be optimized
-example_function_constrained = penalty_constraints(example_function,
-												   constraint_dict,
-												   p_quadratic=20)
+linear_function_const, const_check = penalty_constraints(linear_function,
+                                                         constraint_dict,
+                                                         p_quadratic=50000,
+                                                         p_count=0)
 
-# instantiate an optimization algorithm with the constrained function
-alg = flying_foxes_algorithm(example_function_constrained)
-alg.b_lower = [0, 0, 0]
-alg.b_upper = [100, 100, 100]
-alg.max_iter = 200
+# define variable list and search domain
+var_list = [
+    var_float('x', [0, 20]),
+    var_float('y', [0, 20]),
+    var_float('z', [0, 20])
+]
 
-# solve and show your results!
-alg.solve()
-print(alg.best_value)
-print(alg.best_position)
-print(alg.completed_iter)
+# instantiate an optimization algorithm with the constrained function and search domain
+alg = flying_foxes_algorithm(linear_function_const, var_list)
+
+# optimize and check to make sure constraints are satisfied
+alg.optimize(find_minimum=True, max_iter=200)
+constraint_bools = const_check(*alg.best_position.values())
+
+# show the results!
+print(f'best_value = {alg.best_value:.5f}')
+print(f'best_position = {alg.best_position}')
+print(f'n_iter = {alg.completed_iter}')
+print(f'constraint check: {constraint_bools}')
 ```
 
-With this code, it can be found that the best solution is:
+```profile
+best_value = -19.99982
+best_position = {'x': 0.0, 'y': 0.0, 'z': 4.9999547568628735}
+n_iter = 200
+constraint check: [True, True]
+```
 
-*f(0, 0, 5) = 20*
+With this code, it can be found that the best solution is approximately *f(0, 0, 5) = -20*.
 
 ---
 

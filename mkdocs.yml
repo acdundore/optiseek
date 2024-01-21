@@ -11,14 +11,9 @@ nav:
                 - 'Flying Foxes Algorithm': flying_foxes_algorithm.md
             - 'Local Search Methods':
                 - 'Simulated Annealing': simulated_annealing.md
-                - 'Tabu Search': tabu_search.md
-        - '.direct':
-            - 'Cyclic Coordinate Descent': cyclic_coordinate_descent.md
-            - 'Basic Pattern Search': basic_pattern_search.md
-            - 'Enhanced Pattern Search': enhanced_pattern_search.md
         - '.modelhelpers':
-            - 'Parameter Grid Search': parameter_grid_search.md
             - 'Penalty Constraints': penalty_constraints.md
+            - 'Parameter Grid Search': parameter_grid_search.md
         - '.testfunctions':
             - 'Booths Function': booth.md
             - 'Rosenbrock Function': rosenbrock.md
