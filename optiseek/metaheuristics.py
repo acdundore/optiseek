@@ -178,7 +178,6 @@ class _individual:
             # bound the positions by dimensional domain limits
             self.position = np.maximum(np.minimum(self.position, b_upper), b_lower)
 
-
 class _metaheuristic:
     def __init__(self, input_function, var_list, linspaced_initial_positions=True, results_filename=None):
         # initializing variables
@@ -493,7 +492,7 @@ class particle_swarm_optimizer(_metaheuristic):
 
     Attributes
     ----------
-    best_position : ndarray
+    best_position : dict
         Most optimal position found during the solution iterations.
 
     best_value : float
@@ -502,11 +501,9 @@ class particle_swarm_optimizer(_metaheuristic):
     completed_iter : int
         Number of iterations completed during the solution process.
 
-    stored_positions : ndarray
-        Positions for each particle for each iteration after the optimization is finished. Set to None if user does not choose to store results.
-
-    stored_values : ndarray
-        Function values for each member of the population for each iteration. Set to None if user does not choose to store results.
+    results : pd.DataFrame
+        DataFrame of results throughout the iterations. For each iteration, the function value and
+        position for each member of the population are provided.
 
     Methods
     -------
@@ -521,31 +518,34 @@ class particle_swarm_optimizer(_metaheuristic):
         Parameters
         ----------
         input_function : function
-            Function object for the algorithm to optimize.
+            Function that the algorithm will use to search for an optimum.
 
-        b_lower : float or list of floats or ndarray, default = -10
-            List or array containing the lower bounds of each dimension of the search space.
+        var_list : list of variables
+            List of variables (see variable types) to define the search space. These correspond to the argumets
+            of the objective function and must be in the exact same order. An example of a var_list using all supported variable types:
 
-        b_upper : float or list of floats or ndarray, default = 10
-            List or array containing the upper bounds of each dimension of the search space.
+            var_list = [
+                var_float('x1', [-10, 10]), # values can be floating point numbers within [-10, 10]
+                var_int('x2', [-3, 6]), # values can be integers only within [-3, 6]
+                var_ordinal('x3', ['small', 'medium', 'large']), # values can be either 'small', 'medium', or 'large'
+                var_bool('x4') # value can be True or False
+            ]
 
-        find_minimum : bool, default = True
-            Indicates whether the optimum of interest is a minimum or maximum. If false, looks for maximum.
+        linspaced_initial_positions : bool, default=True
+            If true, creates a linearly spaced set of points in each search dimension, and the initial positions of the population
+            are set to mutually exclusive combinations of these points. This guarantees that there will be no empty spots in a
+            single dimension. If false, random initial positions are chosen.
 
-        max_iter : int, default = 100
-            Maximum number of iterations. If reached, the algorithm terminates.
+        results_filename : str, default = None
+            If a file name is passed (ending in '.csv'), the results will be written to this file after each function
+            evaluation. This can noticeably slow down solution iterations for quick objective functions. For greedy
+            functions, it can be beneficial to do this in case the script is interrupted. An example is:
 
-        sol_threshold : float, default = None
-            If a solution is found past this threshold, the iterations stop. None indicates that the algorithm will not consider this.
-
-        max_unchanged_iter : int, default = None
-            If the solution does not improve after this many iterations, the iterations stop.
-
-        store_results : bool, default = False
-            Choose whether to save results or not. If true, results will be saved to the stored_positions and stored_values properties.
+            results_filename='algorithm_results.csv'
 
         n_particles : int, default = 50
-            Number of particles to use in the particle swarm population.
+            Number of particles to use in the particle swarm population. If set to None, defaults to 10 + 2 * sqrt(n_dims), where n_dims is
+            the dimensionality of the search space.
 
         weight : float, default = 0.25
             Weight coefficient in [0, 1]. Lower weight gives the particles less momentum.
@@ -557,7 +557,7 @@ class particle_swarm_optimizer(_metaheuristic):
             Social coefficient in [0, 3]. Higher value indicates that the particles are drawn more towards the swarm's collectively best known position.
 
         zero_velocity : bool, default = False
-            Choose whether the particles start off with zero velocity or a random initial velocity. Initial velocities can sometimes be unstable.
+            Choose whether the particles start off with zero velocity or a random initial velocity.
         """
         super().__init__(input_function=input_function, var_list=var_list, linspaced_initial_positions=linspaced_initial_positions, results_filename=results_filename)
         # properties specific to PSO
@@ -637,7 +637,28 @@ class particle_swarm_optimizer(_metaheuristic):
 
     def optimize(self, find_minimum, max_iter=None, max_function_evals=None, max_unchanged_iter=None, sol_threshold=None):
         """
-        Executes the solution iterations for the algorithm.
+        Executes the optimization iterations for the algorithm.
+
+        Arguments
+        ---------
+        find_minimum : bool
+            Indicates whether the optimum of interest is a minimum or maximum. If false, looks for maximum.
+
+        max_iter : int, default = None
+            Maximum number of iterations. If reached, the algorithm terminates. Either this or max_function_evals must
+            be set. None indicates that the algorithm will not consider this.
+
+        max_function_evals : int, default = None
+            Maximum number of function evaluations. Must be greater than the size of the population (i.e. complete at
+            least one iteration). The algorithm will terminate after completing this many function evaluations. Either
+            this or max_iter must be set. None indicates that the algorithm will not consider this.
+
+        max_unchanged_iter : int, default = None
+            If the solution does not improve after this many iterations, the iterations stop. None indicates that the
+            algorithm will not consider this.
+
+        sol_threshold : float, default = None
+            If a solution is found better than this threshold, the iterations stop. None indicates that the algorithm will not consider this.
 
         Returns
         -------
@@ -742,7 +763,7 @@ class firefly_algorithm(_metaheuristic):
 
     Attributes
     ----------
-    best_position : ndarray
+    best_position : dict
         Most optimal position found during the solution iterations.
 
     best_value : float
@@ -751,11 +772,9 @@ class firefly_algorithm(_metaheuristic):
     completed_iter : int
         Number of iterations completed during the solution process.
 
-    stored_positions : ndarray
-        Positions for each particle for each iteration after the optimization is finished. Set to None if user does not choose to store results.
-
-    stored_values : ndarray
-        Function values for each member of the population for each iteration. Set to None if user does not choose to store results.
+    results : pd.DataFrame
+        DataFrame of results throughout the iterations. For each iteration, the function value and
+        position for each member of the population are provided.
 
     Methods
     -------
@@ -769,31 +788,34 @@ class firefly_algorithm(_metaheuristic):
         Parameters
         ----------
         input_function : function
-            Function object for the algorithm to optimize.
+            Function that the algorithm will use to search for an optimum.
 
-        b_lower : float or list of floats or ndarray, default = -10
-            List or array containing the lower bounds of each dimension of the search space.
+        var_list : list of variables
+            List of variables (see variable types) to define the search space. These correspond to the argumets
+            of the objective function and must be in the exact same order. An example of a var_list using all supported variable types:
 
-        b_upper : float or list of floats or ndarray, default = 10
-            List or array containing the upper bounds of each dimension of the search space.
+            var_list = [
+                var_float('x1', [-10, 10]), # values can be floating point numbers within [-10, 10]
+                var_int('x2', [-3, 6]), # values can be integers only within [-3, 6]
+                var_ordinal('x3', ['small', 'medium', 'large']), # values can be either 'small', 'medium', or 'large'
+                var_bool('x4') # value can be True or False
+            ]
 
-        find_minimum : bool, default = True
-            Indicates whether the optimum of interest is a minimum or maximum. If false, looks for maximum.
+        linspaced_initial_positions : bool, default=True
+            If true, creates a linearly spaced set of points in each search dimension, and the initial positions of the population
+            are set to mutually exclusive combinations of these points. This guarantees that there will be no empty spots in a
+            single dimension. If false, random initial positions are chosen.
 
-        max_iter : int, default = 100
-            Maximum number of iterations. If reached, the algorithm terminates.
+        results_filename : str, default = None
+            If a file name is passed (ending in '.csv'), the results will be written to this file after each function
+            evaluation. This can noticeably slow down solution iterations for quick objective functions. For greedy
+            functions, it can be beneficial to do this in case the script is interrupted. An example is:
 
-        sol_threshold : float, default = None
-            If a solution is found past this threshold, the iterations stop. None indicates that the algorithm will not consider this.
+            results_filename='algorithm_results.csv'
 
-        max_unchanged_iter : int, default = None
-            If the solution does not improve after this many iterations, the iterations stop.
-
-        store_results : bool, default = False
-            Choose whether to save results or not. If true, results will be saved to the stored_positions and stored_values properties.
-
-        n_fireflies : int, default = 50
-            Number of fireflies to use in the population.
+        n_fireflies : int, default = None
+            Number of fireflies to use in the population. If set to None, defaults to 10 + 2 * sqrt(n_dims), where n_dims is
+            the dimensionality of the search space.
 
         beta : float, default = 1.0
             Beta coefficient in [0.1, 1.5]. Lower value indicates that the fireflies are less attracted to each other.
@@ -870,7 +892,28 @@ class firefly_algorithm(_metaheuristic):
 
     def optimize(self, find_minimum, max_iter=None, max_function_evals=None, max_unchanged_iter=None, sol_threshold=None):
         """
-        Executes the solution iterations for the algorithm.
+        Executes the optimization iterations for the algorithm.
+
+        Arguments
+        ---------
+        find_minimum : bool
+            Indicates whether the optimum of interest is a minimum or maximum. If false, looks for maximum.
+
+        max_iter : int, default = None
+            Maximum number of iterations. If reached, the algorithm terminates. Either this or max_function_evals must
+            be set. None indicates that the algorithm will not consider this.
+
+        max_function_evals : int, default = None
+            Maximum number of function evaluations. Must be greater than the size of the population (i.e. complete at
+            least one iteration). The algorithm will terminate after completing this many function evaluations. Either
+            this or max_iter must be set. None indicates that the algorithm will not consider this.
+
+        max_unchanged_iter : int, default = None
+            If the solution does not improve after this many iterations, the iterations stop. None indicates that the
+            algorithm will not consider this.
+
+        sol_threshold : float, default = None
+            If a solution is found better than this threshold, the iterations stop. None indicates that the algorithm will not consider this.
 
         Returns
         -------
@@ -980,7 +1023,7 @@ class differential_evolution(_metaheuristic):
 
     Attributes
     ----------
-    best_position : ndarray
+    best_position : dict
         Most optimal position found during the solution iterations.
 
     best_value : float
@@ -989,11 +1032,9 @@ class differential_evolution(_metaheuristic):
     completed_iter : int
         Number of iterations completed during the solution process.
 
-    stored_positions : ndarray
-        Positions for each particle for each iteration after the optimization is finished. Set to None if user does not choose to store results.
-
-    stored_values : ndarray
-        Function values for each member of the population for each iteration. Set to None if user does not choose to store results.
+    results : pd.DataFrame
+        DataFrame of results throughout the iterations. For each iteration, the function value and
+        position for each member of the population are provided.
 
     Methods
     -------
@@ -1007,31 +1048,34 @@ class differential_evolution(_metaheuristic):
         Parameters
         ----------
         input_function : function
-            Function object for the algorithm to optimize.
+            Function that the algorithm will use to search for an optimum.
 
-        b_lower : float or list of floats or ndarray, default = -10
-            List or array containing the lower bounds of each dimension of the search space.
+        var_list : list of variables
+            List of variables (see variable types) to define the search space. These correspond to the argumets
+            of the objective function and must be in the exact same order. An example of a var_list using all supported variable types:
 
-        b_upper : float or list of floats or ndarray, default = 10
-            List or array containing the upper bounds of each dimension of the search space.
+            var_list = [
+                var_float('x1', [-10, 10]), # values can be floating point numbers within [-10, 10]
+                var_int('x2', [-3, 6]), # values can be integers only within [-3, 6]
+                var_ordinal('x3', ['small', 'medium', 'large']), # values can be either 'small', 'medium', or 'large'
+                var_bool('x4') # value can be True or False
+            ]
 
-        find_minimum : bool, default = True
-            Indicates whether the optimum of interest is a minimum or maximum. If false, looks for maximum.
+        linspaced_initial_positions : bool, default=True
+            If true, creates a linearly spaced set of points in each search dimension, and the initial positions of the population
+            are set to mutually exclusive combinations of these points. This guarantees that there will be no empty spots in a
+            single dimension. If false, random initial positions are chosen.
 
-        max_iter : int, default = 100
-            Maximum number of iterations. If reached, the algorithm terminates.
+        results_filename : str, default = None
+            If a file name is passed (ending in '.csv'), the results will be written to this file after each function
+            evaluation. This can noticeably slow down solution iterations for quick objective functions. For greedy
+            functions, it can be beneficial to do this in case the script is interrupted. An example is:
 
-        sol_threshold : float, default = None
-            If a solution is found past this threshold, the iterations stop. None indicates that the algorithm will not consider this.
-
-        max_unchanged_iter : int, default = None
-            If the solution does not improve after this many iterations, the iterations stop.
-
-        store_results : bool, default = False
-            Choose whether to save results or not. If true, results will be saved to the stored_positions and stored_values properties.
+            results_filename='algorithm_results.csv'
 
         n_agents : int, default = 50
-            Number of fireflies to use in the population.
+            Number of fireflies to use in the population. If set to None, defaults to 10 + 2 * sqrt(n_dims), where n_dims is
+            the dimensionality of the search space.
 
         weight : float, default = 0.2
             Differential weight coefficient in [0, 2].
@@ -1092,7 +1136,28 @@ class differential_evolution(_metaheuristic):
 
     def optimize(self, find_minimum, max_iter=None, max_function_evals=None, max_unchanged_iter=None, sol_threshold=None):
         """
-        Executes the solution iterations for the algorithm.
+        Executes the optimization iterations for the algorithm.
+
+        Arguments
+        ---------
+        find_minimum : bool
+            Indicates whether the optimum of interest is a minimum or maximum. If false, looks for maximum.
+
+        max_iter : int, default = None
+            Maximum number of iterations. If reached, the algorithm terminates. Either this or max_function_evals must
+            be set. None indicates that the algorithm will not consider this.
+
+        max_function_evals : int, default = None
+            Maximum number of function evaluations. Must be greater than the size of the population (i.e. complete at
+            least one iteration). The algorithm will terminate after completing this many function evaluations. Either
+            this or max_iter must be set. None indicates that the algorithm will not consider this.
+
+        max_unchanged_iter : int, default = None
+            If the solution does not improve after this many iterations, the iterations stop. None indicates that the
+            algorithm will not consider this.
+
+        sol_threshold : float, default = None
+            If a solution is found better than this threshold, the iterations stop. None indicates that the algorithm will not consider this.
 
         Returns
         -------
@@ -1219,7 +1284,7 @@ class mayfly_algorithm(_metaheuristic):
 
     Attributes
     ----------
-    best_position : ndarray
+    best_position : dict
         Most optimal position found during the solution iterations.
 
     best_value : float
@@ -1228,11 +1293,9 @@ class mayfly_algorithm(_metaheuristic):
     completed_iter : int
         Number of iterations completed during the solution process.
 
-    stored_positions : ndarray
-        Positions for each particle for each iteration after the optimization is finished. Set to None if user does not choose to store results.
-
-    stored_values : ndarray
-        Function values for each member of the population for each iteration. Set to None if user does not choose to store results.
+    results : pd.DataFrame
+        DataFrame of results throughout the iterations. For each iteration, the function value and
+        position for each member of the population are provided.
 
     Methods
     -------
@@ -1246,31 +1309,34 @@ class mayfly_algorithm(_metaheuristic):
         Parameters
         ----------
         input_function : function
-            Function object for the algorithm to optimize.
+            Function that the algorithm will use to search for an optimum.
 
-        b_lower : float or list of floats or ndarray, default = -10
-            List or array containing the lower bounds of each dimension of the search space.
+        var_list : list of variables
+            List of variables (see variable types) to define the search space. These correspond to the argumets
+            of the objective function and must be in the exact same order. An example of a var_list using all supported variable types:
 
-        b_upper : float or list of floats or ndarray, default = 10
-            List or array containing the upper bounds of each dimension of the search space.
+            var_list = [
+                var_float('x1', [-10, 10]), # values can be floating point numbers within [-10, 10]
+                var_int('x2', [-3, 6]), # values can be integers only within [-3, 6]
+                var_ordinal('x3', ['small', 'medium', 'large']), # values can be either 'small', 'medium', or 'large'
+                var_bool('x4') # value can be True or False
+            ]
 
-        find_minimum : bool, default = True
-            Indicates whether the optimum of interest is a minimum or maximum. If false, looks for maximum.
+        linspaced_initial_positions : bool, default=True
+            If true, creates a linearly spaced set of points in each search dimension, and the initial positions of the population
+            are set to mutually exclusive combinations of these points. This guarantees that there will be no empty spots in a
+            single dimension. If false, random initial positions are chosen.
 
-        max_iter : int, default = 100
-            Maximum number of iterations. If reached, the algorithm terminates.
+        results_filename : str, default = None
+            If a file name is passed (ending in '.csv'), the results will be written to this file after each function
+            evaluation. This can noticeably slow down solution iterations for quick objective functions. For greedy
+            functions, it can be beneficial to do this in case the script is interrupted. An example is:
 
-        sol_threshold : float, default = None
-            If a solution is found past this threshold, the iterations stop. None indicates that the algorithm will not consider this.
-
-        max_unchanged_iter : int, default = None
-            If the solution does not improve after this many iterations, the iterations stop.
-
-        store_results : bool, default = False
-            Choose whether to save results or not. If true, results will be saved to the stored_positions and stored_values properties.
+            results_filename='algorithm_results.csv'
 
         n_mayflies : int, default = 50
-            Number of mayflies to use in the population, split evenly between males and females.
+            Number of mayflies to use in the population, split evenly between males and females. If set to None,
+            defaults to 10 + 2 * sqrt(n_dims), where n_dims is the dimensionality of the search space.
 
         beta : float, default = 0.7
             Visibility coefficient in [0.1, 1]. Higher value means that mayflies are less drawn towards others.
@@ -1444,7 +1510,28 @@ class mayfly_algorithm(_metaheuristic):
 
     def optimize(self, find_minimum, max_iter=None, max_function_evals=None, max_unchanged_iter=None, sol_threshold=None):
         """
-        Executes the solution iterations for the algorithm.
+        Executes the optimization iterations for the algorithm.
+
+        Arguments
+        ---------
+        find_minimum : bool
+            Indicates whether the optimum of interest is a minimum or maximum. If false, looks for maximum.
+
+        max_iter : int, default = None
+            Maximum number of iterations. If reached, the algorithm terminates. Either this or max_function_evals must
+            be set. None indicates that the algorithm will not consider this.
+
+        max_function_evals : int, default = None
+            Maximum number of function evaluations. Must be greater than the size of the population (i.e. complete at
+            least one iteration). The algorithm will terminate after completing this many function evaluations. Either
+            this or max_iter must be set. None indicates that the algorithm will not consider this.
+
+        max_unchanged_iter : int, default = None
+            If the solution does not improve after this many iterations, the iterations stop. None indicates that the
+            algorithm will not consider this.
+
+        sol_threshold : float, default = None
+            If a solution is found better than this threshold, the iterations stop. None indicates that the algorithm will not consider this.
 
         Returns
         -------
@@ -1755,7 +1842,7 @@ class flying_foxes_algorithm(_metaheuristic):
 
     Attributes
     ----------
-    best_position : ndarray
+    best_position : dict
         Most optimal position found during the solution iterations.
 
     best_value : float
@@ -1764,11 +1851,9 @@ class flying_foxes_algorithm(_metaheuristic):
     completed_iter : int
         Number of iterations completed during the solution process.
 
-    stored_positions : ndarray
-        Positions for each particle for each iteration after the optimization is finished. Set to None if user does not choose to store results.
-
-    stored_values : ndarray
-        Function values for each member of the population for each iteration. Set to None if user does not choose to store results.
+    results : pd.DataFrame
+        DataFrame of results throughout the iterations. For each iteration, the function value and
+        position for each member of the population are provided.
 
     Methods
     -------
@@ -1782,28 +1867,30 @@ class flying_foxes_algorithm(_metaheuristic):
         Parameters
         ----------
         input_function : function
-            Function object for the algorithm to optimize.
+            Function that the algorithm will use to search for an optimum.
 
-        b_lower : float or list of floats or ndarray, default = -10
-            List or array containing the lower bounds of each dimension of the search space.
+        var_list : list of variables
+            List of variables (see variable types) to define the search space. These correspond to the argumets
+            of the objective function and must be in the exact same order. An example of a var_list using all supported variable types:
 
-        b_upper : float or list of floats or ndarray, default = 10
-            List or array containing the upper bounds of each dimension of the search space.
+            var_list = [
+                var_float('x1', [-10, 10]), # values can be floating point numbers within [-10, 10]
+                var_int('x2', [-3, 6]), # values can be integers only within [-3, 6]
+                var_ordinal('x3', ['small', 'medium', 'large']), # values can be either 'small', 'medium', or 'large'
+                var_bool('x4') # value can be True or False
+            ]
 
-        find_minimum : bool, default = True
-            Indicates whether the optimum of interest is a minimum or maximum. If false, looks for maximum.
+        linspaced_initial_positions : bool, default=True
+            If true, creates a linearly spaced set of points in each search dimension, and the initial positions of the population
+            are set to mutually exclusive combinations of these points. This guarantees that there will be no empty spots in a
+            single dimension. If false, random initial positions are chosen.
 
-        max_iter : int, default = 100
-            Maximum number of iterations. If reached, the algorithm terminates.
+        results_filename : str, default = None
+            If a file name is passed (ending in '.csv'), the results will be written to this file after each function
+            evaluation. This can noticeably slow down solution iterations for quick objective functions. For greedy
+            functions, it can be beneficial to do this in case the script is interrupted. An example is:
 
-        sol_threshold : float, default = None
-            If a solution is found past this threshold, the iterations stop. None indicates that the algorithm will not consider this.
-
-        max_unchanged_iter : int, default = None
-            If the solution does not improve after this many iterations, the iterations stop.
-
-        store_results : bool, default = False
-            Choose whether to save results or not. If true, results will be saved to the stored_positions and stored_values properties.
+            results_filename='algorithm_results.csv'
         """
         super().__init__(input_function=input_function, var_list=var_list, linspaced_initial_positions=linspaced_initial_positions, results_filename=results_filename)
 
@@ -1862,7 +1949,28 @@ class flying_foxes_algorithm(_metaheuristic):
 
     def optimize(self, find_minimum, max_iter=None, max_function_evals=None, max_unchanged_iter=None, sol_threshold=None):
         """
-        Executes the solution iterations for the algorithm.
+        Executes the optimization iterations for the algorithm.
+
+        Arguments
+        ---------
+        find_minimum : bool
+            Indicates whether the optimum of interest is a minimum or maximum. If false, looks for maximum.
+
+        max_iter : int, default = None
+            Maximum number of iterations. If reached, the algorithm terminates. Either this or max_function_evals must
+            be set. None indicates that the algorithm will not consider this.
+
+        max_function_evals : int, default = None
+            Maximum number of function evaluations. Must be greater than the size of the population (i.e. complete at
+            least one iteration). The algorithm will terminate after completing this many function evaluations. Either
+            this or max_iter must be set. None indicates that the algorithm will not consider this.
+
+        max_unchanged_iter : int, default = None
+            If the solution does not improve after this many iterations, the iterations stop. None indicates that the
+            algorithm will not consider this.
+
+        sol_threshold : float, default = None
+            If a solution is found better than this threshold, the iterations stop. None indicates that the algorithm will not consider this.
 
         Returns
         -------
@@ -2071,7 +2179,7 @@ class simulated_annealing(_local_search):
 
     Attributes
     ----------
-    best_position : ndarray
+    best_position : dict
         Most optimal position found during the solution iterations.
 
     best_value : float
@@ -2080,11 +2188,9 @@ class simulated_annealing(_local_search):
     completed_iter : int
         Number of iterations completed during the solution process.
 
-    stored_positions : ndarray
-        Positions for each particle for each iteration after the optimization is finished. Set to None if user does not choose to store results.
-
-    stored_values : ndarray
-        Function values for each member of the population for each iteration. Set to None if user does not choose to store results.
+    results : pd.DataFrame
+        DataFrame of results throughout the iterations. For each iteration, the function value and
+        position for each member of the population are provided.
 
     Methods
     -------
@@ -2098,28 +2204,30 @@ class simulated_annealing(_local_search):
         Parameters
         ----------
         input_function : function
-            Function object for the algorithm to optimize.
+            Function that the algorithm will use to search for an optimum.
 
-        b_lower : float or list of floats or ndarray, default = -10
-            List or array containing the lower bounds of each dimension of the search space.
+        var_list : list of variables
+            List of variables (see variable types) to define the search space. These correspond to the argumets
+            of the objective function and must be in the exact same order. An example of a var_list using all supported variable types:
 
-        b_upper : float or list of floats or ndarray, default = 10
-            List or array containing the upper bounds of each dimension of the search space.
+            var_list = [
+                var_float('x1', [-10, 10]), # values can be floating point numbers within [-10, 10]
+                var_int('x2', [-3, 6]), # values can be integers only within [-3, 6]
+                var_ordinal('x3', ['small', 'medium', 'large']), # values can be either 'small', 'medium', or 'large'
+                var_bool('x4') # value can be True or False
+            ]
 
-        find_minimum : bool, default = True
-            Indicates whether the optimum of interest is a minimum or maximum. If false, looks for maximum.
+        linspaced_initial_positions : bool, default=True
+            If true, creates a linearly spaced set of points in each search dimension, and the initial positions of the population
+            are set to mutually exclusive combinations of these points. This guarantees that there will be no empty spots in a
+            single dimension. If false, random initial positions are chosen.
 
-        max_iter : int, default = 100
-            Maximum number of iterations. If reached, the algorithm terminates.
+        results_filename : str, default = None
+            If a file name is passed (ending in '.csv'), the results will be written to this file after each function
+            evaluation. This can noticeably slow down solution iterations for quick objective functions. For greedy
+            functions, it can be beneficial to do this in case the script is interrupted. An example is:
 
-        sol_threshold : float, default = None
-            If a solution is found past this threshold, the iterations stop. None indicates that the algorithm will not consider this.
-
-        max_unchanged_iter : int, default = None
-            If the solution does not improve after this many iterations, the iterations stop.
-
-        store_results : bool, default = False
-            Choose whether to save results or not. If true, results will be saved to the stored_positions and stored_values properties.
+            results_filename='algorithm_results.csv'
 
         start_temperature : float, default = 10.0
             Initial temperature to start iterations with.
@@ -2173,7 +2281,28 @@ class simulated_annealing(_local_search):
 
     def optimize(self, find_minimum, max_iter=None, max_function_evals=None, max_unchanged_iter=None, sol_threshold=None):
         """
-        Executes the solution iterations for the algorithm.
+        Executes the optimization iterations for the algorithm.
+
+        Arguments
+        ---------
+        find_minimum : bool
+            Indicates whether the optimum of interest is a minimum or maximum. If false, looks for maximum.
+
+        max_iter : int, default = None
+            Maximum number of iterations. If reached, the algorithm terminates. Either this or max_function_evals must
+            be set. None indicates that the algorithm will not consider this.
+
+        max_function_evals : int, default = None
+            Maximum number of function evaluations. The algorithm will terminate after completing this many function evaluations.
+            Either this or max_iter must be set. None indicates that the algorithm will not consider this. In this algorithm,
+            max_function_evals functions the same as max_iter.
+
+        max_unchanged_iter : int, default = None
+            If the solution does not improve after this many iterations, the iterations stop. None indicates that the
+            algorithm will not consider this.
+
+        sol_threshold : float, default = None
+            If a solution is found better than this threshold, the iterations stop. None indicates that the algorithm will not consider this.
 
         Returns
         -------

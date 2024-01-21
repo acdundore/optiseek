@@ -30,7 +30,7 @@ The best results of every permutation of parameters are saved for post-processin
 | best_parameters : *dict* | A dictionary containing the best performing set of<br/>parameters. The parameter names as strings are stored as<br/>keys and the corresponding values are stored as values. |
 | best_position : *list or ndarray* | The most optimal position that was found using the<br/>best performing parameters. |
 | best_value : *float* | The most optimal function value that was found using<br/>the best performing parameters. |
-| results : *pandas df* | A pandas DataFrame containing all results from the search. Columns<br/> represent the algorithm parameters, best position found, and best<br/> function value found with the respective parameters. |
+| results : *pd.DataFrame* | A pandas DataFrame containing all results from the search. Columns<br/> represent the algorithm parameters, best position found, and best<br/> function value found with the respective parameters. |
 
 ---
 

@@ -41,7 +41,7 @@ All parameters are also class attributes and may be modified after instantiation
 | best_position : *dict* | Dictionary containing the most optimal position found during the solution<br/> iterations, with variable names as keys and corresponding position values<br/> as values. |
 | best_value : *float* | Most optimal function value found during the solution iterations. |
 | completed_iter : *int* | Number of iterations completed during the solution process. |
-| results : *pandas df* | DataFrame of results throughout the iterations. For each iteration, the<br/> function value and position for each member of the population are provided. |
+| results : *pd.DataFrame* | DataFrame of results throughout the iterations. For each iteration, the<br/> function value and position for each member of the population are provided. |
 
 ---
 
