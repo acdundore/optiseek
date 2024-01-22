@@ -8,7 +8,7 @@ Their movement is influenced by their own previous positions, the best known pos
 
 ---
 
-> *class* optiseek.metaheuristics.**particle_swarm_optimizer**(*input_function, var_list, linspaced_initial_positions=True, results_filename=None, n_particles=None, weight=0.35, phi_p=1.5, phi_g=1.5, zero_velocity=False*)
+> *class* optiseek.metaheuristics.**particle_swarm_optimizer**(*input_function=None, var_list=None, linspaced_initial_positions=True, results_filename=None, n_particles=None, weight=0.35, phi_p=1.5, phi_g=1.5, zero_velocity=False*)
 
 ---
 

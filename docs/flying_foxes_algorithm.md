@@ -14,7 +14,7 @@ It also outperforms most population-based metaheuristics in many engineering pro
 
 ---
 
-> *class* optiseek.metaheuristics.**flying_foxes_algorithm**(*input_function, var_list, linspaced_initial_positions=True, results_filename=None*)
+> *class* optiseek.metaheuristics.**flying_foxes_algorithm**(*input_function=None, var_list=None, linspaced_initial_positions=True, results_filename=None*)
 
 ---
 

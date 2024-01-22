@@ -7,7 +7,7 @@ the brightness (function values) of others. Their movements also have a stochast
 
 ---
 
-> *class* optiseek.metaheuristics.**firefly_algorithm**(*input_function, var_list, linspaced_initial_positions=True, results_filename=None, n_fireflies=None, beta=1.0, alpha=0.05, gamma=0.5*)
+> *class* optiseek.metaheuristics.**firefly_algorithm**(*input_function=None, var_list=None, linspaced_initial_positions=True, results_filename=None, n_fireflies=None, beta=1.0, alpha=0.05, gamma=0.5*)
 
 ---
 

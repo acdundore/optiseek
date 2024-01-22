@@ -1,4 +1,4 @@
-![optiseek logo](images/optiseek_logo_small.png)
+![optiseek logo](images/optiseek_logo_new.png)
 
 [![Downloads](https://static.pepy.tech/personalized-badge/optiseek?period=total&units=none&left_color=black&right_color=red&left_text=Downloads)](https://pepy.tech/project/optiseek)
 

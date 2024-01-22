@@ -7,7 +7,7 @@ but has a special unique form of crossover that makes it widely applicable to a 
 
 ---
 
-> *class* optiseek.metaheuristics.**differential_evolution**(*input_function, var_list, linspaced_initial_positions=True, results_filename=None, n_agents=None, weight=0.8, p_crossover=0.9*)
+> *class* optiseek.metaheuristics.**differential_evolution**(*input_function=None, var_list=None, linspaced_initial_positions=True, results_filename=None, n_agents=None, weight=0.8, p_crossover=0.9*)
 
 ---
 

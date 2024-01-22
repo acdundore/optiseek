@@ -9,7 +9,7 @@ between the males and females and selection of the best in the population takes 
 
 ---
 
-> *class* optiseek.metaheuristics.**mayfly_algorithm**(*input_function, var_list, linspaced_initial_positions=True, results_filename=None, n_mayflies=None, beta=0.7, gravity=0.6, alpha_cog=0.5, alpha_soc=1.5, alpha_attract=1.5, nuptial_coeff=0.05*)
+> *class* optiseek.metaheuristics.**mayfly_algorithm**(*input_function=None, var_list=None, linspaced_initial_positions=True, results_filename=None, n_mayflies=None, beta=0.7, gravity=0.6, alpha_cog=0.5, alpha_soc=1.5, alpha_attract=1.5, nuptial_coeff=0.05*)
 
 ---
 

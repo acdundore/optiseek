@@ -9,7 +9,7 @@ As the iterations progress (i.e. temperature decreases), this probability dimini
 
 ---
 
-> *class* optiseek.metaheuristics.**simulated_annealing**(*input_function, var_list, results_filename=None, initial_guess=None, sigma_coeff=0.2, neighbor_dim_changes=1, start_temperature=10, alpha=0.90*)
+> *class* optiseek.metaheuristics.**simulated_annealing**(*input_function=None, var_list=None, results_filename=None, initial_guess=None, sigma_coeff=0.2, neighbor_dim_changes=-1, start_temperature=10, alpha=0.90*)
 
 ---
 
@@ -24,7 +24,7 @@ All parameters are also class attributes and may be modified after instantiation
 | results_filename : *string* | If a file name is passed (ending in '.csv'), the results will be<br/> written to this file after each function evaluation. This can<br/> noticeably slow down solution iterations for quick objective<br/> functions. For greedy functions, it can be beneficial to do this<br/> in case the script is interrupted. |
 | initial_guess : *list of floats or ndarray* | Initial guess used in the solution process. Leave as `None` to<br/> start with a random initial guess. |
 | sigma_coeff : *float* | Coefficient in (0, 0.5] to be multiplied by the bound widths<br/> for each dimension; the corresponding number is used for<br/> the standard deviation in the neighbor generation process. |
-| neighbor_dim_changes : *int* | Number of dimensions to mutate during the generation of<br/> a new neighbor position. Must be in [1, number of dimensions] |
+| neighbor_dim_changes : *int* | Number of dimensions to mutate during the generation of<br/> a new neighbor position. Must be in [1, number of dimensions].<br/> If set to -1, all dimensions will be mutated each iteration. |
 | start_temperature : *float* | Initial temperature to start iterations with. |
 | alpha : *float* | Temperature decay coefficient in \[0.6, 1). The current<br/> temperature is multiplied by this at the end of each iteration. |
 
