@@ -3,105 +3,6 @@ import numpy as np
 import pandas as pd
 
 
-class _variable:
-    def __init__(self, var_name, var_type, specified_bounds, internal_bounds, choices):
-        # initialize variables
-        self.var_name = var_name
-        self.var_type = var_type
-        self.specified_bounds = specified_bounds
-        self.internal_bounds = internal_bounds
-        self.choices = choices
-
-        # calculate parameters to transform from specified to internal bounds
-        self._scale = (self.specified_bounds[1] - self.specified_bounds[0]) / (self.internal_bounds[1] - self.internal_bounds[0])
-        self._shift = -self._scale * self.internal_bounds[0] + self.specified_bounds[0]
-
-    @property
-    def var_name(self):
-        return self._var_name
-
-    @var_name.setter
-    def var_name(self, value):
-        self._var_name = value
-
-    @property
-    def var_type(self):
-        return self._var_type
-
-    @var_type.setter
-    def var_type(self, value):
-        if value not in ['float', 'int', 'ordinal', 'bool']:
-            raise TypeError('var_name must be one of the following: ''float'', ''int'', ''ordinal'', ''bool''')
-        self._var_type = value
-
-    @property
-    def specified_bounds(self):
-        return self._specified_bounds
-
-    @specified_bounds.setter
-    def specified_bounds(self, value):
-        if isinstance(value, np.ndarray):
-            self._specified_bounds = value
-        elif type(value) is list:
-            self._specified_bounds = np.array(value, dtype=float)
-        else:
-            self._specified_bounds = np.array([value], dtype=float)
-
-    @property
-    def internal_bounds(self):
-        return self._internal_bounds
-
-    @internal_bounds.setter
-    def internal_bounds(self, value):
-        if isinstance(value, np.ndarray):
-            self._internal_bounds = value
-        elif type(value) is list:
-            self._internal_bounds = np.array(value, dtype=float)
-        else:
-            self._internal_bounds = np.array([value], dtype=float)
-
-    @property
-    def choices(self):
-        return self._choices
-
-    @choices.setter
-    def choices(self, value):
-        if self.var_type not in ['ordinal', 'bool']:
-            self._choices = None
-        else:
-            self._choices = value
-
-    # function to convert a value from internal position to specified position, including encodings for categorical, boolean, and integers
-    def _internal_to_specified(self, internal_position):
-        specified_position = self._scale * internal_position + self._shift
-        if self.var_type in ['ordinal', 'bool']:
-            encoded_position = self.choices[int(min(max(self.specified_bounds[0], np.floor(specified_position)), self.specified_bounds[1] - 1))]
-        elif self.var_type == 'int':
-            encoded_position = int(min(max(self.specified_bounds[0], np.round(specified_position)), self.specified_bounds[1]))
-        else:
-            encoded_position = min(max(self.specified_bounds[0], specified_position), self.specified_bounds[1])
-
-        return encoded_position
-
-class var_float(_variable):
-    def __init__(self, var_name, bounds):
-        super().__init__(var_name, var_type='float', specified_bounds=bounds, internal_bounds=[-1, 1], choices=None)
-
-class var_int(_variable):
-    def __init__(self, var_name, bounds):
-        super().__init__(var_name, var_type='int', specified_bounds=bounds, internal_bounds=[-1, 1], choices=None)
-
-class var_ordinal(_variable):
-    def __init__(self, var_name, choices):
-        if type(choices) is not list:
-            raise TypeError('choices must be a list.')
-        super().__init__(var_name, var_type='ordinal', specified_bounds=[0, len(choices)], internal_bounds=[-1, 1], choices=choices)
-
-class var_bool(_variable):
-    def __init__(self, var_name):
-        super().__init__(var_name, var_type='bool', specified_bounds=[0, 2], internal_bounds=[-1, 1], choices=[False, True])
-
-
 class _individual:
     def __init__(self, n_dimensions=1):
         # initialize variables
@@ -186,9 +87,9 @@ class _metaheuristic:
         self.linspaced_initial_positions = linspaced_initial_positions # boolean to get linearly spaced initial positions in each dimension
         self.results_filename = results_filename # csv filename (or path) to store results during iterations in case algorithm is aborted
         self.results = None # initialize stored results as None
-        self.best_position = None
-        self.best_value = None
-        self.completed_iter = 0
+        self.best_position = None # initialize best position as None
+        self.best_value = None # initialize best value as None
+        self.completed_iter = 0 # initialize the completed iterations
 
         # creating protected attribute to store the number of total function evaluations completed
         self._function_eval_counter = 0
@@ -302,6 +203,13 @@ class _metaheuristic:
 
     # method to run at the beginning of the main optimize() method in order to run some checks
     def _initialize_optimization(self, find_minimum, max_iter=None, max_function_evals=None, max_unchanged_iter=None, sol_threshold=None):
+        # reset all attributes that are used during solution iterations
+        self.results = None
+        self.best_position = None
+        self.best_value = None
+        self.completed_iter = 0
+        self._function_eval_counter = 0
+
         # check to make sure that an objective function and search domain have been set
         if self.objective_function is None or self.var_list is None:
             raise ValueError('Both an objective_function and var_list must be defined in order to optimize.')
@@ -350,7 +258,7 @@ class _metaheuristic:
             self.best_value = -np.Inf
 
     # method to get linearly spaced points along each dimension, and sample from this for initial position;
-    # guarantees that the search space doesn't miss certain values (especially with ordinal variables)
+    # guarantees that the search space doesn't miss certain values (especially with categorical variables)
     def _get_linspaced_initial_positions(self, population_list):
         # create array of linearly spaced values between the bounds along each dimension of the search space
         linspaced_domain_values = np.linspace(start=self._b_lower, stop=self._b_upper, num=len(population_list), axis=1)
@@ -536,7 +444,7 @@ class particle_swarm_optimizer(_metaheuristic):
             var_list = [
                 var_float('x1', [-10, 10]), # values can be floating point numbers within [-10, 10]
                 var_int('x2', [-3, 6]), # values can be integers only within [-3, 6]
-                var_ordinal('x3', ['small', 'medium', 'large']), # values can be either 'small', 'medium', or 'large'
+                var_categorical('x3', ['small', 'medium', 'large']), # values can be either 'small', 'medium', or 'large'
                 var_bool('x4') # value can be True or False
             ]
 
@@ -810,7 +718,7 @@ class firefly_algorithm(_metaheuristic):
             var_list = [
                 var_float('x1', [-10, 10]), # values can be floating point numbers within [-10, 10]
                 var_int('x2', [-3, 6]), # values can be integers only within [-3, 6]
-                var_ordinal('x3', ['small', 'medium', 'large']), # values can be either 'small', 'medium', or 'large'
+                var_categorical('x3', ['small', 'medium', 'large']), # values can be either 'small', 'medium', or 'large'
                 var_bool('x4') # value can be True or False
             ]
 
@@ -1074,7 +982,7 @@ class differential_evolution(_metaheuristic):
             var_list = [
                 var_float('x1', [-10, 10]), # values can be floating point numbers within [-10, 10]
                 var_int('x2', [-3, 6]), # values can be integers only within [-3, 6]
-                var_ordinal('x3', ['small', 'medium', 'large']), # values can be either 'small', 'medium', or 'large'
+                var_categorical('x3', ['small', 'medium', 'large']), # values can be either 'small', 'medium', or 'large'
                 var_bool('x4') # value can be True or False
             ]
 
@@ -1339,7 +1247,7 @@ class mayfly_algorithm(_metaheuristic):
             var_list = [
                 var_float('x1', [-10, 10]), # values can be floating point numbers within [-10, 10]
                 var_int('x2', [-3, 6]), # values can be integers only within [-3, 6]
-                var_ordinal('x3', ['small', 'medium', 'large']), # values can be either 'small', 'medium', or 'large'
+                var_categorical('x3', ['small', 'medium', 'large']), # values can be either 'small', 'medium', or 'large'
                 var_bool('x4') # value can be True or False
             ]
 
@@ -1902,7 +1810,7 @@ class flying_foxes_algorithm(_metaheuristic):
             var_list = [
                 var_float('x1', [-10, 10]), # values can be floating point numbers within [-10, 10]
                 var_int('x2', [-3, 6]), # values can be integers only within [-3, 6]
-                var_ordinal('x3', ['small', 'medium', 'large']), # values can be either 'small', 'medium', or 'large'
+                var_categorical('x3', ['small', 'medium', 'large']), # values can be either 'small', 'medium', or 'large'
                 var_bool('x4') # value can be True or False
             ]
 
@@ -2239,7 +2147,7 @@ class simulated_annealing(_local_search):
             var_list = [
                 var_float('x1', [-10, 10]), # values can be floating point numbers within [-10, 10]
                 var_int('x2', [-3, 6]), # values can be integers only within [-3, 6]
-                var_ordinal('x3', ['small', 'medium', 'large']), # values can be either 'small', 'medium', or 'large'
+                var_categorical('x3', ['small', 'medium', 'large']), # values can be either 'small', 'medium', or 'large'
                 var_bool('x4') # value can be True or False
             ]
 
