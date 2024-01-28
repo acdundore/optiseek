@@ -18,7 +18,7 @@ in order for the constraint to be properly enforced. In situations like this, it
 Applying penalty constraints does not guarantee that the optimization algorithm will converge at a point within the constraints. Oftentimes, the penalty multipliers
 must be tuned by the user to find out what works best.
 
-Parameters of the `Optiseek` *penalty_constraints* function allow the user to control the magnitude of each of these penalties. 
+Parameters of the `optiseek` *penalty_constraints* function allow the user to control the magnitude of each of these penalties. 
 Combinations of both of these penalty types can be applied at once with a single *penalty_constraints* function call. A value of zero will result in
 no penalty of that type being applied to the returned penalized function. A higher value increases the step height for count penalties and increases the slope for
 quadratic penalties. This tool will work for any function, whether the user would like to find the minimum or maximum.
@@ -60,7 +60,7 @@ taken from an article by Xin-She Yang (see references) based on the properties o
 Note that in this example, we choose to use a quadratic penalty multiplier of 2 and no counted penalty at all. Also note that the constraint functions must share the
 same arguments in the same order as the input function.
 
-![Spring Problem Graphic](images/spring_problem_graphic.png)
+![Spring Problem Graphic](images/example_spring_problem.png)
 
 ```python
 from optiseek.modelhelpers import penalty_constraints
@@ -138,18 +138,11 @@ Also, we can assume an upper bound on the search domain of 20 for each variable.
 
 *Note: This is a linear problem, and could be easily solved with linear programming as well. However, it is a good example for re-arranging constraint functions.*
 
-Minimize:  
-*f(x, y, z) = -2x - 3y - 4z*
+![Linear Problem Statement](images/example_linear_1.png)
 
-Subject to:   
-*3x + 2y + z ≤ 10*	
-*2x + 5y + 3z ≤ 15*		
-*x, y, z ≥ 0*
+First, we will re-arrange the constraints. We can use the minimum value for x, y, and z to help define the search space.
 
-Re-arranged constraints:   
-*3x + 2y + z - 10 ≤ 0*	
-*2x + 5y + 3z - 15 ≤ 0*		
-*x, y, z ≥ 0*
+![Linear Constraints](images/example_linear_2.png)
 
 ```python
 from optiseek.modelhelpers import penalty_constraints

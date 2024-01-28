@@ -1,12 +1,15 @@
-site_name: optiseek
+site_name: Optiseek
 nav:
     - 'Home': index.md
+    - 'Quick Start Examples': examples.md
     - 'optiseek API':
+        - '.variables':
+            - 'All Variable Types': variables.md
         - '.metaheuristics':
             - 'Population-Based Methods':
                 - 'Particle Swarm Optimizer': particle_swarm_optimization.md
-                - 'Firefly Algorithm': firefly_algorithm.md
                 - 'Differential Evolution': differential_evolution.md
+                - 'Firefly Algorithm': firefly_algorithm.md
                 - 'Mayfly Algorithm': mayfly_algorithm.md
                 - 'Flying Foxes Algorithm': flying_foxes_algorithm.md
             - 'Local Search Methods':
@@ -15,10 +18,10 @@ nav:
             - 'Penalty Constraints': penalty_constraints.md
             - 'Parameter Grid Search': parameter_grid_search.md
         - '.testfunctions':
-            - 'Booths Function': booth.md
+            - 'Ackley Function': ackley.md
+            - 'Booth Function': booth.md
             - 'Rosenbrock Function': rosenbrock.md
-            - 'Wheelers Ridge': wheelers_ridge.md
-            - 'Ackleys Function (2D)': ackley2D.md
+            - 'Wheeler''s Ridge': wheelers_ridge.md
 theme: 
     name: readthedocs
     prev_next_buttons_location: None

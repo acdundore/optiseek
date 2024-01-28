@@ -3,9 +3,11 @@
 This is a 2D function with a global minimum in a deep valley. It is mostly smooth other than two ridges along each of the principal axes. These cause some algorithms to converge into local minima or diverge.
 In this form, the minimum is at [1, 1.5] with a value of -1.
 
+![Wheelers Ridge Function Plot](images/plot_wheelersridge.png)
+
 Form of the function is as follows: 
 
-*f(x, y) = -exp(-(x1\*x2 - 1.5)^2 - (x2 - 1.5)^2)*
+![Wheelers Ridge Equation](images/equation_wheelersridge.png)
 
 ---
 
@@ -28,6 +30,10 @@ Form of the function is as follows:
 from optiseek.testfunctions import wheelers_ridge
 
 y = wheelers_ridge(1, 1.5)
+```
+
+```compile
+-1
 ```
 
 ---

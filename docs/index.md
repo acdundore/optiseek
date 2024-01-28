@@ -1,4 +1,4 @@
-![optiseek logo](images/optiseek_logo_new.png)
+![optiseek logo](images/optiseek_logo_new_small.png)
 
 [![Downloads](https://static.pepy.tech/personalized-badge/optiseek?period=total&units=none&left_color=black&right_color=red&left_text=Downloads)](https://pepy.tech/project/optiseek)
 
@@ -25,7 +25,7 @@ pip install optiseek
 
 ## Usage
 
-`Optiseek` provides access to numerous optimization algorithms that require minimal effort from the user. An example using the well-known particle swarm optimization algorithm can be as simple as this:
+`optiseek` provides access to numerous optimization algorithms that require minimal effort from the user. An example using the well-known particle swarm optimization algorithm can be as simple as this:
 
 ```python
 from optiseek.metaheuristics import particle_swarm_optimizer
@@ -59,8 +59,8 @@ This is a fairly basic example implementation without much thought put into para
 
 ## License
 
-`Optiseek` was created by Alex Dundore. It is licensed under the terms of the MIT license.
+`optiseek` was created by Alex Dundore. It is licensed under the terms of the MIT license.
 
 ## Credits and Dependencies
 
-`Optiseek` is powered by [`numpy`](https://numpy.org/).
+`optiseek` is powered by [`numpy`](https://numpy.org/).

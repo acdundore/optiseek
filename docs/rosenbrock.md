@@ -1,10 +1,12 @@
-# Rosenbrock's Function
+# Rosenbrock Function
 
 This is a 2D function with a global minimum of zero at [1, 1].
 
+![Rosenbrock Function Plot](images/plot_rosenbrock.png)
+
 Form of the function is as follows: 
 
-*f(x, y) = (1 - x1)^2 + 5(x2 - x1^2)^2*
+![Rosenbrock Equation](images/equation_rosenbrock.png)
 
 ---
 
@@ -27,6 +29,10 @@ Form of the function is as follows:
 from optiseek.testfunctions import rosenbrock
 
 y = rosenbrock(1, 1)
+```
+
+```compile
+0
 ```
 
 ---
