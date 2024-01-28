@@ -15,11 +15,15 @@ def wheelers_ridge(x1, x2):
     y = -np.exp(-(x1 * x2 - a)**2 - (x2 - a)**2)
     return y
 
-def ackley2D(x1, x2):
-    y = -20 * np.exp(-0.2 * np.sqrt(0.5 * (x1**2 + x2**2))) - np.exp(0.5 * (np.cos(2 * np.pi * x1) + np.cos(2 * np.pi * x2))) + np.exp(1) + 20
+def ackley(*args):
+    d = len(args)
+    sum_1 = 0
+    sum_2 = 0
+    for x in args:
+        sum_1 += x ** 2
+        sum_2 += np.cos(2 * np.pi * x)
+
+    y = -20 * np.exp(-0.2 * np.sqrt(1 / d * sum_1)) - np.exp(1 / d * sum_2) + np.exp(1) + 20
     return y
-
-
-
 
 
