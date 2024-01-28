@@ -123,8 +123,8 @@ class _metaheuristic:
             b_lower_list = []
             b_upper_list = []
             for v in self._var_list:
-                b_lower_list.append(v.internal_bounds[0])
-                b_upper_list.append(v.internal_bounds[1])
+                b_lower_list.append(v._internal_bounds[0])
+                b_upper_list.append(v._internal_bounds[1])
 
             self._b_lower = np.array(b_lower_list)
             self._b_upper = np.array(b_upper_list)

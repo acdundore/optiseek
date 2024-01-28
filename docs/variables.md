@@ -10,17 +10,12 @@ When defining variables and search space bounds for an algorithm, the user passe
 
 ---
 
-> Floats/Continous  
-> *class* optiseek.variables.**var_float**(*var_name, bounds*)
-
-> Integers  
-> *class* optiseek.variables.**var_int**(*var_name, bounds*)
-
-> Categorical   
-> *class* optiseek.variables.**var_categorical**(*var_name, choices*)
-
-> Boolean (True/False)   
-> *class* optiseek.variables.**var_bool**(*var_name*)
+| Variable Type | Class Instantiation |
+|---|---|
+| Floats/Continuous | optiseek.variables.**var_float**(*var_name, bounds*) |
+| Integers | optiseek.variables.**var_int**(*var_name, bounds*) |
+| Categorical | optiseek.variables.**var_categorical**(*var_name, choices*) |
+| Boolean (True/False) | optiseek.variables.**var_bool**(*var_name*) |
 
 ---
 
@@ -37,6 +32,8 @@ When defining variables and search space bounds for an algorithm, the user passe
 ### Example
 
 ```python
+from optiseek.variables import *
+
 # defining a variable list to be passed to an algorithm
 var_list = [
     var_float('x_float', [-10.5, 10.5]),

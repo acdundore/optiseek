@@ -4,7 +4,7 @@ nav:
     - 'Quick Start Examples': examples.md
     - 'optiseek API':
         - '.variables':
-            - 'All Variable Types': variables.md
+            - 'Variable Types': variables.md
         - '.metaheuristics':
             - 'Population-Based Methods':
                 - 'Particle Swarm Optimizer': particle_swarm_optimization.md
