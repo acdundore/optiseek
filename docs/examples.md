@@ -13,8 +13,8 @@ needing any knowledge of the form of the function (i.e. black box functions).
 The algorithms in `optiseek` are applicable to a wide array of problems, including:
 
 - high dimensionality black-box objective functions
-- greedy objective functions (i.e. the function evaluations are costly or slow), like hyperparameter tuning in Machine Learning
-- non-greedy objective functions, as the optimizers have little computational overhead
+- computationally expensive objective functions (i.e. the function evaluations are costly or slow), like hyperparameter tuning in Machine Learning
+- non-expensive objective functions, as the optimizers have little computational overhead
 - problems with a considerable amount of constraints on the search space
 - objective functions with variables of mixed types (continuous, integer, categorical, boolean)
 

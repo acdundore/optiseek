@@ -12,9 +12,9 @@ Benefits of using Optiseek include:
 - support for float, integer, categorical, and boolean inputs for objective functions
 - compatibility with black-box objective functions (requires no information on gradients or shape of search space)
 - simple algorithms compared to alternatives (e.g. Bayesian optimization) with faster runtime on basic objective functions
-- competitive convergence for greedy objective functions in terms of number of function evaluations
+- competitive convergence for computionally expensive objective functions in terms of number of function evaluations
 - easy integration into ML pipelines for hyper-parameter tuning
-- access to a variety of stopping criteria, suitable for both greedy and non-greedy objective functions
+- access to a variety of stopping criteria, suitable for both computationally expensive and cheap objective functions
 - carefully chosen default parameters for algorithms, with ability for user-defined fine tuning
 
 ## Installation
