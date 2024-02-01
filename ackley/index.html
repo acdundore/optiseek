@@ -5,15 +5,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Ackleys Function (2D) - optiseek</title>
+    <title>Ackley Function - Optiseek</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Ackleys Function (2D)";
-        var mkdocs_page_input_path = "ackley2D.md";
+        var mkdocs_page_name = "Ackley Function";
+        var mkdocs_page_input_path = "ackley.md";
         var mkdocs_page_url = null;
       </script>
     
@@ -31,7 +31,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
     <div class="wy-side-scroll">
       <div class="wy-side-nav-search">
-          <a href=".." class="icon icon-home"> optiseek
+          <a href=".." class="icon icon-home"> Optiseek
         </a><div role="search">
   <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
       <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
@@ -44,17 +44,27 @@
                 <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
                 </li>
               </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../examples/">Quick Start Examples</a>
+                </li>
+              </ul>
               <p class="caption"><span class="caption-text">optiseek API</span></p>
               <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="#">.variables</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../variables/">Variable Types</a>
+                </li>
+    </ul>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="#">.metaheuristics</a>
     <ul>
                 <li class="toctree-l2"><a class="reference internal" href="#">Population-Based Methods</a>
     <ul>
                 <li class="toctree-l3"><a class="reference internal" href="../particle_swarm_optimization/">Particle Swarm Optimizer</a>
                 </li>
-                <li class="toctree-l3"><a class="reference internal" href="../firefly_algorithm/">Firefly Algorithm</a>
-                </li>
                 <li class="toctree-l3"><a class="reference internal" href="../differential_evolution/">Differential Evolution</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../firefly_algorithm/">Firefly Algorithm</a>
                 </li>
                 <li class="toctree-l3"><a class="reference internal" href="../mayfly_algorithm/">Mayfly Algorithm</a>
                 </li>
@@ -66,39 +76,27 @@
     <ul>
                 <li class="toctree-l3"><a class="reference internal" href="../simulated_annealing/">Simulated Annealing</a>
                 </li>
-                <li class="toctree-l3"><a class="reference internal" href="../tabu_search/">Tabu Search</a>
-                </li>
     </ul>
-                </li>
-    </ul>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="#">.direct</a>
-    <ul>
-                <li class="toctree-l2"><a class="reference internal" href="../cyclic_coordinate_descent/">Cyclic Coordinate Descent</a>
-                </li>
-                <li class="toctree-l2"><a class="reference internal" href="../basic_pattern_search/">Basic Pattern Search</a>
-                </li>
-                <li class="toctree-l2"><a class="reference internal" href="../enhanced_pattern_search/">Enhanced Pattern Search</a>
                 </li>
     </ul>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="#">.modelhelpers</a>
     <ul>
-                <li class="toctree-l2"><a class="reference internal" href="../parameter_grid_search/">Parameter Grid Search</a>
-                </li>
                 <li class="toctree-l2"><a class="reference internal" href="../penalty_constraints/">Penalty Constraints</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../parameter_grid_search/">Parameter Grid Search</a>
                 </li>
     </ul>
                   </li>
                   <li class="toctree-l1 current"><a class="reference internal current" href="#">.testfunctions</a>
     <ul class="current">
-                <li class="toctree-l2"><a class="reference internal" href="../booth/">Booths Function</a>
+                <li class="toctree-l2 current"><a class="reference internal current" href="./">Ackley Function</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../booth/">Booth Function</a>
                 </li>
                 <li class="toctree-l2"><a class="reference internal" href="../rosenbrock/">Rosenbrock Function</a>
                 </li>
-                <li class="toctree-l2"><a class="reference internal" href="../wheelers_ridge/">Wheelers Ridge</a>
-                </li>
-                <li class="toctree-l2 current"><a class="reference internal current" href="./">Ackleys Function (2D)</a>
+                <li class="toctree-l2"><a class="reference internal" href="../wheelers_ridge/">Wheeler's Ridge</a>
                 </li>
     </ul>
                   </li>
@@ -110,7 +108,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
       <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="..">optiseek</a>
+          <a href="..">Optiseek</a>
         
       </nav>
       <div class="wy-nav-content">
@@ -118,7 +116,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
           <li>optiseek API &raquo;</li>
-          <li>.testfunctions &raquo;</li><li>Ackleys Function (2D)</li>
+          <li>.testfunctions &raquo;</li><li>Ackley Function</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -128,13 +126,15 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="ackleys-function-2-dimensional">Ackley's Function (2-Dimensional)</h1>
-<p>This is a non-convex function with many local optima around a single global minimum of zero<br/> at [0, 0].</p>
+                <h1 id="ackley-function">Ackley Function</h1>
+<p>This is a non-convex function with many local optima around a single global minimum of zero<br/> at [0, 0, ... , 0].
+This function implementation can be scaled to any number of dimensions depending on the number of inputs passed.</p>
+<p><img alt="Ackleys Function Plot" src="../images/plot_ackley2d.png" /></p>
 <p>Form of the function is as follows: </p>
-<p><em>f(x, y) = -20exp(-0.2sqrt(0.5(x1^2+x2^2))) - exp(0.5(cos(2πx1) + cos(2πx2))) + exp(1) + 20</em></p>
+<p><img alt="Ackleys Equation" src="../images/equation_ackley.png" /></p>
 <hr />
 <blockquote>
-<p><em>function</em> optiseek.testfunctions.<strong>ackley2D</strong>(<em>x1, x2</em>)</p>
+<p><em>function</em> optiseek.testfunctions.<strong>ackley</strong>(<em>*args</em>)</p>
 </blockquote>
 <hr />
 <h3 id="parameters">Parameters</h3>
@@ -147,20 +147,19 @@
 </thead>
 <tbody>
 <tr>
-<td>x1 : <em>float</em></td>
-<td>Input value for the first dimension.</td>
-</tr>
-<tr>
-<td>x2 : <em>float</em></td>
-<td>Input value for the second dimension.</td>
+<td>*args : <em>float</em></td>
+<td>Dynamic amount of x values for the function. The dimension of the function</br> adjusts to how many arguments are entered.</td>
 </tr>
 </tbody>
 </table>
 <hr />
 <h3 id="example">Example</h3>
-<pre><code class="language-python">from optiseek.testfunctions import ackley2D
+<pre><code class="language-python">from optiseek.testfunctions import ackley
 
-y = ackley2D(0, 0)
+y = ackley(0, 0)
+print(y)
+</code></pre>
+<pre><code class="language-compile">0
 </code></pre>
 <hr />
 <h3 id="references">References</h3>
@@ -189,8 +188,10 @@ y = ackley2D(0, 0)
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../wheelers_ridge/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../parameter_grid_search/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
+    
+      <span><a href="../booth/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Quick Start Examples - Optiseek</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Quick Start Examples";
+        var mkdocs_page_input_path = "examples.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Optiseek
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Quick Start Examples</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">optiseek API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="#">.variables</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../variables/">Variable Types</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">.metaheuristics</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="#">Population-Based Methods</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../particle_swarm_optimization/">Particle Swarm Optimizer</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../differential_evolution/">Differential Evolution</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../firefly_algorithm/">Firefly Algorithm</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../mayfly_algorithm/">Mayfly Algorithm</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../flying_foxes_algorithm/">Flying Foxes Algorithm</a>
+                </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="#">Local Search Methods</a>
+    <ul>
+                <li class="toctree-l3"><a class="reference internal" href="../simulated_annealing/">Simulated Annealing</a>
+                </li>
+    </ul>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">.modelhelpers</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../penalty_constraints/">Penalty Constraints</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../parameter_grid_search/">Parameter Grid Search</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">.testfunctions</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../ackley/">Ackley Function</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../booth/">Booth Function</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../rosenbrock/">Rosenbrock Function</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../wheelers_ridge/">Wheeler's Ridge</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Optiseek</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li><li>Quick Start Examples</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="quick-start-guide">Quick Start Guide</h1>
+<p>The purpose of this package is to give users access to a class of optimization algorithms called metaheuristics 
+with an easy-to-use and versatile API. The word "metaheuristics" comes from "meta", meaning <em>beyond</em>, and "heuristic", meaning <em>to find</em>.
+Most algorithms of this type are based on a naturally occurring process that has the emergent property of tending towards an optimum.
+For example, there are metaheuristics influenced by natural selection of genes (evolutionary algorithms), 
+swarm behavior of insects (particle swarm optimization), 
+and annealing in metals at the atomic level (simulated annealing), to name a few.
+Although they are not guaranteed to find the global optimum, these algorithms perform exceptionally well in both
+exploration and exploitation of large, high-dimensional search spaces. They also have the benefit of not 
+needing any knowledge of the form of the function (i.e. black box functions).</p>
+<p>The algorithms in <code>optiseek</code> are applicable to a wide array of problems, including:</p>
+<ul>
+<li>high dimensionality black-box objective functions</li>
+<li>computationally expensive objective functions (i.e. the function evaluations are costly or slow), like hyperparameter tuning in Machine Learning</li>
+<li>non-expensive objective functions, as the optimizers have little computational overhead</li>
+<li>problems with a considerable amount of constraints on the search space</li>
+<li>objective functions with variables of mixed types (continuous, integer, categorical, boolean)</li>
+</ul>
+<p>To demonstrate the versatility of the algorithms in this package, some examples are provided.</p>
+<hr />
+<h3 id="example-continous-variables">Example: Continous Variables</h3>
+<p>First, let's optimize the 2-Dimensional Ackley function. This is a problem with 2 continuous variables as input,
+and a minimum of zero at [0, 0]. The <code>ackley</code> function is included with <code>optiseek</code>.</p>
+<pre><code class="language-python">from optiseek.variables import var_float
+from optiseek.metaheuristics import particle_swarm_optimizer
+from optiseek.testfunctions import ackley
+
+# define variable list and search domain
+var_list = [
+    var_float('x1', [-10, 10]),
+    var_float('x2', [-10, 10])
+]
+
+# instantiate an optimization algorithm with the function and search domain
+alg = particle_swarm_optimizer(ackley, var_list)
+
+# set stopping criteria and optimize
+alg.optimize(find_minimum=True, max_iter=100)
+
+# show the results!
+print(f'best_value = {alg.best_value:.5f}')
+print(f'best_position = {alg.best_position}')
+</code></pre>
+<pre><code class="language-profile">best_value = 0.00000
+best_position = {'x1': 2.8710730581797484e-17, 'x2': -3.254202051602899e-16}
+</code></pre>
+<hr />
+<h3 id="example-mixed-type-variables">Example: Mixed-Type Variables</h3>
+<p>Because <code>optiseek</code>'s algorithms also support mixed-type variables for the objective function, we will
+create a custom version of the <code>ackley</code> for demonstration purposes. We will modify the standard function output
+with an integer, categorical, and boolean variable. The way the modified function is written, it will maintain
+a minimum of zero at [0, 0].</p>
+<pre><code class="language-python">from optiseek.variables import *
+from optiseek.metaheuristics import particle_swarm_optimizer
+from optiseek.testfunctions import ackley
+
+# create modified version of the ackley function
+def ackley_mixed(x1, x2, x_int, x_cat, x_bool):
+    output = ackley(x1, x2)
+    output += x_int * 2
+    if x_cat == 'A':
+        output = output
+    elif x_cat == 'B':
+        output = 3 * output
+    else:
+        output = 2 * output
+    output += int(x_bool) * 2
+
+    return output
+
+# define variable list and search domain
+var_list = [
+    var_float('x1', [-10, 10]),
+    var_float('x2', [-10, 10]),
+    var_int('x_int', [0, 5]),
+    var_categorical('x_cat', ['A', 'B', 'C']),
+    var_bool('x_bool')
+]
+
+# instantiate an optimization algorithm with the function and search domain
+alg = particle_swarm_optimizer(ackley_mixed, var_list)
+
+# set stopping criteria and optimize
+alg.optimize(find_minimum=True, max_iter=100)
+
+# show the results!
+print(f'best_value = {alg.best_value:.5f}')
+print(f'best_position = {alg.best_position}')
+</code></pre>
+<pre><code class="language-profile">best_value = 0.00000
+best_position = {'x1': 2.9828990486468627e-16, 'x2': -1.8893781942141117e-16, 'x_int': 0, 'x_cat': 'A', 'x_bool': False}
+</code></pre>
+<hr />
+<h3 id="example-hyperparameter-tuning-in-ml-algorithms">Example: Hyperparameter Tuning in ML Algorithms</h3>
+<p>For this example, we will use the <code>scikit-learn</code> and <code>lightgbm</code> packages for our ML tools,
+the California Housing dataset, and MRSE as the error metric. Note that the example uses <code>max_function_evals</code> 
+for the stopping criterion, because performing cross-validation makes for a greedy objective function.
+In this case, we want to set a limit on the maximum number of allowed function evaluations.
+Also, we pass a file name to the <code>results_filename</code> optimization argument to preserve our results in the case
+that we need to terminate the algorithm prematurely.</p>
+<p>The steps to tuning hyperparameters for an ML algorithm with <code>optiseek</code> are straighforward:</p>
+<ol>
+<li>Prepare the training data</li>
+<li>Create a function that performs cross-validation with the hyperparameters are arguments and error metric as output</li>
+<li>Define the search space</li>
+<li>Pass this to an algorithm in <code>optiseek</code> and optimize</li>
+</ol>
+<pre><code class="language-python"># imports
+from optiseek.variables import *
+from optiseek.metaheuristics import particle_swarm_optimizer
+
+from sklearn.datasets import fetch_california_housing
+from sklearn.model_selection import cross_validate
+
+from lightgbm import LGBMRegressor
+
+# import and prepare the data
+california_housing = fetch_california_housing(as_frame=True)
+X = california_housing.data
+y = california_housing.target
+
+
+# set up cross-validation of the model as the objective function
+def objective_function(learning_rate, num_leaves, max_depth, min_child_weight, min_child_samples, subsample, colsample_bytree, reg_alpha):
+    # assign the parameters
+    params = {
+        'n_estimators': 300,
+        'learning_rate': learning_rate,
+        'num_leaves': num_leaves,
+        'max_depth': max_depth,
+        'min_child_weight': min_child_weight,
+        'min_child_samples': min_child_samples,
+        'subsample': subsample,
+        'colsample_bytree': colsample_bytree,
+        'reg_alpha': reg_alpha,
+        'verbose': -1
+    }
+
+    # create the model
+    model = LGBMRegressor(**params)
+
+    # cross validate and return average validation MRSE
+    cv_results = cross_validate(model, X, y, scoring='neg_root_mean_squared_error', cv=5)
+    cv_score = -np.mean(cv_results['test_score'])
+
+    return cv_score
+
+
+# define the search space
+var_list = [
+    var_float('learning_rate', [0.001, 0.3]),
+    var_int('num_leaves', [20, 3000]),
+    var_int('max_depth', [3, 12]),
+    var_float('min_child_weight', [0.0005, 0.1]),
+    var_int('min_child_samples', [5, 50]),
+    var_float('subsample', [0.5, 1]),
+    var_float('colsample_bytree', [0.5, 1]),
+    var_float('reg_alpha', [0.001, 0.1])
+]
+
+# instantiate an optimization algorithm with the function and search domain
+alg = particle_swarm_optimizer(objective_function, var_list, results_filename='cv_results.csv')
+
+# set stopping criteria and optimize
+alg.optimize(find_minimum=True, max_function_evals=300)
+
+# show the results!
+print(f'best_value = {alg.best_value:.5f}')
+print(f'best_position = {alg.best_position}')
+</code></pre>
+<pre><code class="language-profile">best_value = 0.60881
+best_position = {'learning_rate': 0.24843279626513076, 'num_leaves': 3000, 'max_depth': 3, 'min_child_weight': 0.06303795879741575, 'min_child_samples': 27, 'subsample': 0.5, 'colsample_bytree': 0.9620615099733333, 'reg_alpha': 0.022922559999999998}
+</code></pre>
+<hr />
+<h5 id="example-constrained-objective-functions">Example: Constrained Objective Functions</h5>
+<p>Refer to the <code>penalty_constraints</code> page for multiple examples on applying constraints to objective functions.</p>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../variables/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

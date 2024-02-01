@@ -5,14 +5,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Booths Function - optiseek</title>
+    <title>Booth Function - Optiseek</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Booths Function";
+        var mkdocs_page_name = "Booth Function";
         var mkdocs_page_input_path = "booth.md";
         var mkdocs_page_url = null;
       </script>
@@ -31,7 +31,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
     <div class="wy-side-scroll">
       <div class="wy-side-nav-search">
-          <a href=".." class="icon icon-home"> optiseek
+          <a href=".." class="icon icon-home"> Optiseek
         </a><div role="search">
   <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
       <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
@@ -44,17 +44,27 @@
                 <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
                 </li>
               </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../examples/">Quick Start Examples</a>
+                </li>
+              </ul>
               <p class="caption"><span class="caption-text">optiseek API</span></p>
               <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="#">.variables</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../variables/">Variable Types</a>
+                </li>
+    </ul>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="#">.metaheuristics</a>
     <ul>
                 <li class="toctree-l2"><a class="reference internal" href="#">Population-Based Methods</a>
     <ul>
                 <li class="toctree-l3"><a class="reference internal" href="../particle_swarm_optimization/">Particle Swarm Optimizer</a>
                 </li>
-                <li class="toctree-l3"><a class="reference internal" href="../firefly_algorithm/">Firefly Algorithm</a>
-                </li>
                 <li class="toctree-l3"><a class="reference internal" href="../differential_evolution/">Differential Evolution</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../firefly_algorithm/">Firefly Algorithm</a>
                 </li>
                 <li class="toctree-l3"><a class="reference internal" href="../mayfly_algorithm/">Mayfly Algorithm</a>
                 </li>
@@ -66,39 +76,27 @@
     <ul>
                 <li class="toctree-l3"><a class="reference internal" href="../simulated_annealing/">Simulated Annealing</a>
                 </li>
-                <li class="toctree-l3"><a class="reference internal" href="../tabu_search/">Tabu Search</a>
-                </li>
     </ul>
-                </li>
-    </ul>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="#">.direct</a>
-    <ul>
-                <li class="toctree-l2"><a class="reference internal" href="../cyclic_coordinate_descent/">Cyclic Coordinate Descent</a>
-                </li>
-                <li class="toctree-l2"><a class="reference internal" href="../basic_pattern_search/">Basic Pattern Search</a>
-                </li>
-                <li class="toctree-l2"><a class="reference internal" href="../enhanced_pattern_search/">Enhanced Pattern Search</a>
                 </li>
     </ul>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="#">.modelhelpers</a>
     <ul>
-                <li class="toctree-l2"><a class="reference internal" href="../parameter_grid_search/">Parameter Grid Search</a>
-                </li>
                 <li class="toctree-l2"><a class="reference internal" href="../penalty_constraints/">Penalty Constraints</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../parameter_grid_search/">Parameter Grid Search</a>
                 </li>
     </ul>
                   </li>
                   <li class="toctree-l1 current"><a class="reference internal current" href="#">.testfunctions</a>
     <ul class="current">
-                <li class="toctree-l2 current"><a class="reference internal current" href="./">Booths Function</a>
+                <li class="toctree-l2"><a class="reference internal" href="../ackley/">Ackley Function</a>
+                </li>
+                <li class="toctree-l2 current"><a class="reference internal current" href="./">Booth Function</a>
                 </li>
                 <li class="toctree-l2"><a class="reference internal" href="../rosenbrock/">Rosenbrock Function</a>
                 </li>
-                <li class="toctree-l2"><a class="reference internal" href="../wheelers_ridge/">Wheelers Ridge</a>
-                </li>
-                <li class="toctree-l2"><a class="reference internal" href="../ackley2D/">Ackleys Function (2D)</a>
+                <li class="toctree-l2"><a class="reference internal" href="../wheelers_ridge/">Wheeler's Ridge</a>
                 </li>
     </ul>
                   </li>
@@ -110,7 +108,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
       <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="..">optiseek</a>
+          <a href="..">Optiseek</a>
         
       </nav>
       <div class="wy-nav-content">
@@ -118,7 +116,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
           <li>optiseek API &raquo;</li>
-          <li>.testfunctions &raquo;</li><li>Booths Function</li>
+          <li>.testfunctions &raquo;</li><li>Booth Function</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -128,10 +126,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="booths-function">Booth's Function</h1>
+                <h1 id="booth-function">Booth Function</h1>
 <p>This is a simple 2D quadratic function with a minimum of zero at [1, 3].</p>
+<p><img alt="Booth Function Plot" src="../images/plot_booth.png" /></p>
 <p>Form of the function is as follows: </p>
-<p><em>f(x, y) = (x + 2y - 7)^2 + (2x + y - 5)^2</em></p>
+<p><img alt="Booth Equation" src="../images/equation_booth.png" /></p>
 <hr />
 <blockquote>
 <p><em>function</em> optiseek.testfunctions.<strong>booth</strong>(<em>x1, x2</em>)</p>
@@ -161,6 +160,9 @@
 <pre><code class="language-python">from optiseek.testfunctions import booth
 
 y = booth(1, 3)
+print(y)
+</code></pre>
+<pre><code class="language-compile">0
 </code></pre>
 <hr />
 <h3 id="references">References</h3>
@@ -189,7 +191,7 @@ y = booth(1, 3)
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../penalty_constraints/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../ackley/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
       <span><a href="../rosenbrock/" style="color: #fcfcfc">Next &raquo;</a></span>

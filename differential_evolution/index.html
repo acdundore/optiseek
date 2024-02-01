@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Differential Evolution - optiseek</title>
+    <title>Differential Evolution - Optiseek</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
@@ -31,7 +31,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
     <div class="wy-side-scroll">
       <div class="wy-side-nav-search">
-          <a href=".." class="icon icon-home"> optiseek
+          <a href=".." class="icon icon-home"> Optiseek
         </a><div role="search">
   <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
       <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
@@ -44,17 +44,27 @@
                 <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
                 </li>
               </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../examples/">Quick Start Examples</a>
+                </li>
+              </ul>
               <p class="caption"><span class="caption-text">optiseek API</span></p>
               <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="#">.variables</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../variables/">Variable Types</a>
+                </li>
+    </ul>
+                  </li>
                   <li class="toctree-l1 current"><a class="reference internal current" href="#">.metaheuristics</a>
     <ul class="current">
                 <li class="toctree-l2 current"><a class="reference internal current" href="#">Population-Based Methods</a>
     <ul class="current">
                 <li class="toctree-l3"><a class="reference internal" href="../particle_swarm_optimization/">Particle Swarm Optimizer</a>
                 </li>
-                <li class="toctree-l3"><a class="reference internal" href="../firefly_algorithm/">Firefly Algorithm</a>
-                </li>
                 <li class="toctree-l3 current"><a class="reference internal current" href="./">Differential Evolution</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../firefly_algorithm/">Firefly Algorithm</a>
                 </li>
                 <li class="toctree-l3"><a class="reference internal" href="../mayfly_algorithm/">Mayfly Algorithm</a>
                 </li>
@@ -66,39 +76,27 @@
     <ul>
                 <li class="toctree-l3"><a class="reference internal" href="../simulated_annealing/">Simulated Annealing</a>
                 </li>
-                <li class="toctree-l3"><a class="reference internal" href="../tabu_search/">Tabu Search</a>
-                </li>
     </ul>
-                </li>
-    </ul>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="#">.direct</a>
-    <ul>
-                <li class="toctree-l2"><a class="reference internal" href="../cyclic_coordinate_descent/">Cyclic Coordinate Descent</a>
-                </li>
-                <li class="toctree-l2"><a class="reference internal" href="../basic_pattern_search/">Basic Pattern Search</a>
-                </li>
-                <li class="toctree-l2"><a class="reference internal" href="../enhanced_pattern_search/">Enhanced Pattern Search</a>
                 </li>
     </ul>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="#">.modelhelpers</a>
     <ul>
-                <li class="toctree-l2"><a class="reference internal" href="../parameter_grid_search/">Parameter Grid Search</a>
-                </li>
                 <li class="toctree-l2"><a class="reference internal" href="../penalty_constraints/">Penalty Constraints</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../parameter_grid_search/">Parameter Grid Search</a>
                 </li>
     </ul>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="#">.testfunctions</a>
     <ul>
-                <li class="toctree-l2"><a class="reference internal" href="../booth/">Booths Function</a>
+                <li class="toctree-l2"><a class="reference internal" href="../ackley/">Ackley Function</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../booth/">Booth Function</a>
                 </li>
                 <li class="toctree-l2"><a class="reference internal" href="../rosenbrock/">Rosenbrock Function</a>
                 </li>
-                <li class="toctree-l2"><a class="reference internal" href="../wheelers_ridge/">Wheelers Ridge</a>
-                </li>
-                <li class="toctree-l2"><a class="reference internal" href="../ackley2D/">Ackleys Function (2D)</a>
+                <li class="toctree-l2"><a class="reference internal" href="../wheelers_ridge/">Wheeler's Ridge</a>
                 </li>
     </ul>
                   </li>
@@ -110,7 +108,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
       <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="..">optiseek</a>
+          <a href="..">Optiseek</a>
         
       </nav>
       <div class="wy-nav-content">
@@ -135,10 +133,11 @@
 but has a special unique form of crossover that makes it widely applicable to a diverse set of problems. There are also very few parameters, making it simple to tune.</p>
 <hr />
 <blockquote>
-<p><em>class</em> optiseek.metaheuristics.<strong>differential_evolution</strong>(<em>input_function, b_lower=-10, b_upper=10, find_minimum=True, max_iter=100, sol_threshold=None, max_unchanged_iter=None, store_results=False, n_agents=50, weight=0.2, p_crossover=0.5</em>)</p>
+<p><em>class</em> optiseek.metaheuristics.<strong>differential_evolution</strong>(<em>input_function=None, var_list=None, linspaced_initial_positions=True, results_filename=None, n_agents=None, weight=0.8, p_crossover=0.9</em>)</p>
 </blockquote>
 <hr />
 <h3 id="parameters">Parameters</h3>
+<p>All parameters are also class attributes and may be modified after instantiation.</p>
 <table>
 <thead>
 <tr>
@@ -152,40 +151,24 @@ but has a special unique form of crossover that makes it widely applicable to a 
 <td>Function that the algorithm will use to search for an optimum.<br/> *args will be passed to the function within the solver.</td>
 </tr>
 <tr>
-<td>b_lower : <em>float, list of floats, or ndarray</em></td>
-<td>Contains the lower bounds of each dimension in the search <br/>  space. Can be a float if the function is one-dimensional.</td>
+<td>var_list : <em>list of variables</em></td>
+<td>List of variables (see variable types) to define the search space.<br/> These correspond to the arguments of the objective function<br/> and must be in the exact same order.</td>
 </tr>
 <tr>
-<td>b_upper : <em>float, list of floats, or ndarray</em></td>
-<td>Contains the upper bounds of each dimension in the search <br/>  space. Can be a float if the function is one-dimensional.</td>
+<td>linspaced_initial_positions : <em>bool</em></td>
+<td>If true, creates a linearly spaced set of points in each search<br/> dimension, and the initial positions of the population are set to<br/> mutually exclusive combinations of these points. This guarantees<br/> that there will be no empty spots in a single dimension. If false,<br/> random initial positions are chosen.</td>
 </tr>
 <tr>
-<td>find_minimum : <em>bool</em></td>
-<td>Indicates whether the optimimum of interest is a minimum<br/> or maximum. If true, looks for minimum. If false,<br/> looks for maximum.</td>
-</tr>
-<tr>
-<td>max_iter : <em>int</em></td>
-<td>Maximum number of iterations. If reached, the algorithm<br/> terminates.</td>
-</tr>
-<tr>
-<td>sol_threshold : <em>float</em></td>
-<td>If a solution is found better than this threshold, the iterations<br/> stop. <code>None</code> indicates that the algorithm will not consider this.</td>
-</tr>
-<tr>
-<td>max_unchanged_iter : <em>int</em></td>
-<td>If the solution does not improve after this many iterations,<br/> the solver terminates. <code>None</code> indicates that the algorithm<br/> will not consider this.</td>
-</tr>
-<tr>
-<td>store_results : <em>bool</em></td>
-<td>Choose whether to save intermediate iteration results for<br/> post-processing or not. If true, results will be saved.</td>
+<td>results_filename : <em>string</em></td>
+<td>If a file name is passed (ending in '.csv'), the results will be written<br/> to this file after each function evaluation. This can noticeably slow<br/> down solution iterations for quick objective functions. For greedy<br/> functions, it can be beneficial to do this in case the script is<br/> interrupted.</td>
 </tr>
 <tr>
 <td>n_agents : <em>int</em></td>
-<td>Number of agents to use in the population.</td>
+<td>Number of agents to use in the population. If<br/> set to <code>None</code>, the population size will be based on the heuristic<br/> 10 + 2 * sqrt(n_dims), where n_dims is the dimensionality of<br/> the search space. This is typically sufficient to explore the<br/> whole search space.</td>
 </tr>
 <tr>
 <td>weight : <em>float</em></td>
-<td>Differential weight coefficient in [0, 2].</td>
+<td>Differential weight coefficient in [0, 2]. Higher values increase<br/> the impact of genetic crossover.</td>
 </tr>
 <tr>
 <td>p_crossover : <em>float</em></td>
@@ -204,8 +187,8 @@ but has a special unique form of crossover that makes it widely applicable to a 
 </thead>
 <tbody>
 <tr>
-<td>best_position : <em>ndarray</em></td>
-<td>Most optimal position found during the solution iterations.</td>
+<td>best_position : <em>dict</em></td>
+<td>Dictionary containing the most optimal position found during the solution<br/> iterations, with variable names as keys and corresponding position values<br/> as values.</td>
 </tr>
 <tr>
 <td>best_value : <em>float</em></td>
@@ -216,52 +199,76 @@ but has a special unique form of crossover that makes it widely applicable to a 
 <td>Number of iterations completed during the solution process.</td>
 </tr>
 <tr>
-<td>stored_positions : <em>ndarray</em></td>
-<td>Positions for each member of the population for each iteration after<br/> the solver is finished. Set to <code>None</code> if user does not choose to store results.<br/> The results are placed in an array in the following format:<br/> <code>[iteration, population member, position in each dimension]</code></td>
-</tr>
-<tr>
-<td>stored_values : <em>ndarray</em></td>
-<td>Function values for each member of the population for each iteration.<br/> Set to <code>None</code> if user does not choose to store results. The results are<br/> placed in an array in the following format:<br/> <code>[iteration, population member, function value]</code></td>
+<td>results : <em>pd.DataFrame</em></td>
+<td>DataFrame of results throughout the iterations. For each iteration, the<br/> function value and position for each member of the population are provided.</td>
 </tr>
 </tbody>
 </table>
 <hr />
 <h3 id="methods">Methods</h3>
-<pre><code class="language-python">.solve()
-</code></pre>
-<p>Executes the algorithm solution with the current parameters. Results will be stored to the class attributes. If the user opted to store intermediate results, these will also be stored.</p>
-<ul>
-<li>Parameters<ul>
-<li>None</li>
-</ul>
-</li>
-<li>Returns<ul>
-<li>None</li>
-</ul>
-</li>
-</ul>
+<p><strong>.optimize</strong>(<em>find_minimum, max_iter=None, max_function_evals=None, max_unchanged_iter=None, sol_threshold=None</em>)</p>
+<blockquote>
+<p>Executes the algorithm solution with the current parameters. 
+Results will be stored to the class attributes. 
+Either <em>max_iter</em> or <em>max_function_evals</em> must be specified in order to prevent an endless optimization loop.
+If any of the criteria are met during optimization, the process is terminated.</p>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>find_minimum : <em>bool</em></td>
+<td>Indicates whether the optimimum of interest is a minimum or<br/> maximum. If true, looks for minimum. If false, looks for maximum.</td>
+</tr>
+<tr>
+<td>max_iter : <em>int</em></td>
+<td>Maximum number of iterations. The algorithm will terminate after<br/> completing this many iterations. <code>None</code> indicates that the algorithm<br/> will not consider this.</td>
+</tr>
+<tr>
+<td>max_function_evals : <em>int</em></td>
+<td>Maximum number of function evaluations. Must be greater than the<br/> size of the population (i.e. complete at least one iteration). The<br/> algorithm will terminate after completing this many function<br/> evaluations. This is a preferable metric for greedy algorithms. <br/><code>None</code> indicates that the algorithm will not consider this.</td>
+</tr>
+<tr>
+<td>max_unchanged_iter : <em>int</em></td>
+<td>If the solution does not improve after this many iterations,<br/> the optimization terminates. <code>None</code> indicates that the algorithm<br/> will not consider this.</td>
+</tr>
+<tr>
+<td>sol_threshold : <em>float</em></td>
+<td>If a solution is found better than this threshold, the iterations<br/> stop. <code>None</code> indicates that the algorithm will not consider this.</td>
+</tr>
+</tbody>
+</table>
+</blockquote>
 <hr />
 <h3 id="example">Example</h3>
-<pre><code class="language-python">from optiseek.metaheuristics import differential_evolution
+<pre><code class="language-python">from optiseek.variables import var_float
+from optiseek.metaheuristics import differential_evolution
 from optiseek.testfunctions import booth
 
-# create an instance of the algorithm, set its parameters, and solve
-alg = differential_evolution(booth)  # create instance with booth test function
-alg.b_lower = [-10, -10] # define lower bounds
-alg.b_upper = [10, 10] # define upper bounds
-alg.max_iter = 100 # set iteration limit
-alg.sol_threshold = 0.001 # set a solution threshold
-alg.n_agents = 20 # define population size
-alg.weight = 0.2 # set differential weight
-alg.p_crossover = 0.35 # set crossover probability
+# define a list of variables and their domains for the objective function
+var_list = [
+    var_float('x1', [-10, 10]),
+    var_float('x2', [-10, 10])
+]   
 
-# execute the algorithm
-alg.solve()
+# create an instance of the algorithm to optimize the booth test function and set its parameters
+alg = differential_evolution(booth, var_list)
+
+# define stopping criteria and optimize
+alg.optimize(find_minimum=True, max_iter=10, sol_threshold=0.05)
 
 # show the results!
-print(alg.best_value)
-print(alg.best_position)
-print(alg.completed_iter)
+print(f'best_value = {alg.best_value:.5f}')
+print(f'best_position = {alg.best_position}')
+print(f'n_iter = {alg.completed_iter}')
+</code></pre>
+<pre><code class="language-profile">best_value = 0.07129
+best_position = {'x1': 0.9199999999999992, 'x2': 3.1733333333333325}
+n_iter = 10
 </code></pre>
 <hr />
 <h3 id="references">References</h3>
@@ -290,10 +297,10 @@ print(alg.completed_iter)
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../firefly_algorithm/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../particle_swarm_optimization/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../mayfly_algorithm/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../firefly_algorithm/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

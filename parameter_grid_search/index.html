@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Parameter Grid Search - optiseek</title>
+    <title>Parameter Grid Search - Optiseek</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
@@ -31,7 +31,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
     <div class="wy-side-scroll">
       <div class="wy-side-nav-search">
-          <a href=".." class="icon icon-home"> optiseek
+          <a href=".." class="icon icon-home"> Optiseek
         </a><div role="search">
   <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
       <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
@@ -44,17 +44,27 @@
                 <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
                 </li>
               </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../examples/">Quick Start Examples</a>
+                </li>
+              </ul>
               <p class="caption"><span class="caption-text">optiseek API</span></p>
               <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="#">.variables</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../variables/">Variable Types</a>
+                </li>
+    </ul>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="#">.metaheuristics</a>
     <ul>
                 <li class="toctree-l2"><a class="reference internal" href="#">Population-Based Methods</a>
     <ul>
                 <li class="toctree-l3"><a class="reference internal" href="../particle_swarm_optimization/">Particle Swarm Optimizer</a>
                 </li>
-                <li class="toctree-l3"><a class="reference internal" href="../firefly_algorithm/">Firefly Algorithm</a>
-                </li>
                 <li class="toctree-l3"><a class="reference internal" href="../differential_evolution/">Differential Evolution</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../firefly_algorithm/">Firefly Algorithm</a>
                 </li>
                 <li class="toctree-l3"><a class="reference internal" href="../mayfly_algorithm/">Mayfly Algorithm</a>
                 </li>
@@ -66,39 +76,27 @@
     <ul>
                 <li class="toctree-l3"><a class="reference internal" href="../simulated_annealing/">Simulated Annealing</a>
                 </li>
-                <li class="toctree-l3"><a class="reference internal" href="../tabu_search/">Tabu Search</a>
-                </li>
     </ul>
-                </li>
-    </ul>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="#">.direct</a>
-    <ul>
-                <li class="toctree-l2"><a class="reference internal" href="../cyclic_coordinate_descent/">Cyclic Coordinate Descent</a>
-                </li>
-                <li class="toctree-l2"><a class="reference internal" href="../basic_pattern_search/">Basic Pattern Search</a>
-                </li>
-                <li class="toctree-l2"><a class="reference internal" href="../enhanced_pattern_search/">Enhanced Pattern Search</a>
                 </li>
     </ul>
                   </li>
                   <li class="toctree-l1 current"><a class="reference internal current" href="#">.modelhelpers</a>
     <ul class="current">
-                <li class="toctree-l2 current"><a class="reference internal current" href="./">Parameter Grid Search</a>
-                </li>
                 <li class="toctree-l2"><a class="reference internal" href="../penalty_constraints/">Penalty Constraints</a>
+                </li>
+                <li class="toctree-l2 current"><a class="reference internal current" href="./">Parameter Grid Search</a>
                 </li>
     </ul>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="#">.testfunctions</a>
     <ul>
-                <li class="toctree-l2"><a class="reference internal" href="../booth/">Booths Function</a>
+                <li class="toctree-l2"><a class="reference internal" href="../ackley/">Ackley Function</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../booth/">Booth Function</a>
                 </li>
                 <li class="toctree-l2"><a class="reference internal" href="../rosenbrock/">Rosenbrock Function</a>
                 </li>
-                <li class="toctree-l2"><a class="reference internal" href="../wheelers_ridge/">Wheelers Ridge</a>
-                </li>
-                <li class="toctree-l2"><a class="reference internal" href="../ackley2D/">Ackleys Function (2D)</a>
+                <li class="toctree-l2"><a class="reference internal" href="../wheelers_ridge/">Wheeler's Ridge</a>
                 </li>
     </ul>
                   </li>
@@ -110,7 +108,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
       <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="..">optiseek</a>
+          <a href="..">Optiseek</a>
         
       </nav>
       <div class="wy-nav-content">
@@ -129,11 +127,12 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="parameter-grid-search">Parameter Grid Search</h1>
-<p>This class is a utility to help the user tune their optimization algorithms. This is accomplished by creating a grid of parameter permutations based on user input
-and running a selected algorithm with those parameters to find the best set. The final results of every permutation of parameters are saved for post-processing.</p>
+<p>The purpose of the grid search is to provide an easy way to tune parameters for a given algorithm in a way that will work well on a certain class of problem.
+This is accomplished by creating a grid of parameter permutations based on user input and running a selected algorithm with those parameters to find the best set. 
+The best results of every permutation of parameters are saved for post-processing.</p>
 <hr />
 <blockquote>
-<p><em>class</em> optiseek.modelhelpers.<strong>parameter_grid_search</strong>(<em>algorithm, input_function, param_options, show_progress=False</em>)</p>
+<p><em>class</em> optiseek.modelhelpers.<strong>parameter_grid_search</strong>(<em>algorithm, input_function, var_list, param_grid, optimize_options, show_progress=False</em>)</p>
 </blockquote>
 <hr />
 <h3 id="parameters">Parameters</h3>
@@ -154,8 +153,16 @@ and running a selected algorithm with those parameters to find the best set. The
 <td>Function object for the algorithm to optimize.</td>
 </tr>
 <tr>
-<td>param_options : <em>dict</em></td>
-<td>Dictionary containing the grid of parameters to be explored<br/>with the parameter names (strings) as keys and a list of<br/>parameter values as values. All permutations of parameters<br/>in this dict will be tested. For inputs that would normally be<br/>in a list (like the search bounds on a 2+ dimensional function,<br/>for example), place that list inside another list.<br/>For any parameters not specified, the default will be used.<br/>See the example for more details.</td>
+<td>var_list : <em>list of variables</em></td>
+<td>List of all variable objects to define their names and domains in the<br/> search space. This is the same list you would pass to the optimization<br/> algorithm class.</td>
+</tr>
+<tr>
+<td>param_grid : <em>dict</em></td>
+<td>Dictionary containing the grid of parameters to be explored<br/>with the parameter names (strings) as keys and a list of<br/>parameter values as values. All permutations of parameters<br/>in this dict will be tested. For any parameters not specified, the default<br/> will be used. See the example for more details.</td>
+</tr>
+<tr>
+<td>optimize_options : <em>dict</em></td>
+<td>Dictionary containing the kwargs for the optimize() method of the<br/> algorithm.</td>
 </tr>
 <tr>
 <td>show_progress : <em>bool</em></td>
@@ -174,18 +181,6 @@ and running a selected algorithm with those parameters to find the best set. The
 </thead>
 <tbody>
 <tr>
-<td>param_permutations : <em>list of dicts</em></td>
-<td>A list of dictionaries that represent the parameter<br/>permutations used for each iteration of the grid search.<br/>In the dicts, the parameter name as a string is the key<br/>and the parameter value is the value.</td>
-</tr>
-<tr>
-<td>permutation_positions : <em>list of ndarrays</em></td>
-<td>A list containing the optimal positions found for each<br/>permutation of parameters. This corresponds with the<br/>permutations in the param_permutations attribute.</td>
-</tr>
-<tr>
-<td>permutation_values : <em>list of floats</em></td>
-<td>A list containing the optimal values found for each<br/>permutation of parameters. This corresponds with the<br/>permutations in the param_permutations attribute.</td>
-</tr>
-<tr>
 <td>best_parameters : <em>dict</em></td>
 <td>A dictionary containing the best performing set of<br/>parameters. The parameter names as strings are stored as<br/>keys and the corresponding values are stored as values.</td>
 </tr>
@@ -197,56 +192,72 @@ and running a selected algorithm with those parameters to find the best set. The
 <td>best_value : <em>float</em></td>
 <td>The most optimal function value that was found using<br/>the best performing parameters.</td>
 </tr>
+<tr>
+<td>results : <em>pd.DataFrame</em></td>
+<td>A pandas DataFrame containing all results from the search. Columns<br/> represent the algorithm parameters, best position found, and best<br/> function value found with the respective parameters.</td>
+</tr>
 </tbody>
 </table>
 <hr />
 <h3 id="methods">Methods</h3>
-<pre><code class="language-python">.solve()
-</code></pre>
+<p><strong>.search</strong>()</p>
+<blockquote>
 <p>Executes the parameter grid search process and stores the results in the class attributes.</p>
-<ul>
-<li>Parameters<ul>
-<li>None</li>
-</ul>
-</li>
-<li>Returns<ul>
-<li>None</li>
-</ul>
-</li>
-</ul>
+</blockquote>
 <hr />
 <h3 id="example">Example</h3>
-<pre><code class="language-python">from optiseek.modelhelpers import parameter_grid_search
-from optiseek.metaheuristics import simulated_annealing
-from optiseek.testfunctions import ackley2D
+<pre><code class="language-python">from optiseek.variables import var_float
+from optiseek.modelhelpers import parameter_grid_search
+from optiseek.metaheuristics import particle_swarm_optimizer
+from optiseek.testfunctions import ackley
 
-# set up the param_options dictionary
-param_options = {
-    &quot;initial_guess&quot;: [[8, 4]],
-    &quot;b_lower&quot;: [[-10, -10]],
-    &quot;b_upper&quot;: [[10, 10]],
-    &quot;sigma_coeff&quot;: [0.05, 0.1, 0.2, 0.3],
-    &quot;max_iter&quot;: [50, 100, 500],
-    &quot;start_temperature&quot;: [20, 10, 5, 2],
-    &quot;alpha&quot;: [0.85, 0.93, 0.99],
-    &quot;neighbor_dim_changes&quot;: [1, 2]
+# define the variables for the Ackley2D function
+var_list = [
+    var_float('x', [-10, 10]),
+    var_float('y', [-10, 10])
+]
+
+# set up the param_grid dictionary
+param_grid = {
+    'n_particles': [10],
+    'weight': [0.20, 0.35, 0.50],
+    'phi_p': [1.0, 1.5, 2.0],
+    'phi_g': [1.0, 1.5, 2.0],
+    'zero_velocity': [True, False]
 }
 
-# create the an instance of the grid search class and execute the solve method
-pgs = parameter_grid_search(simulated_annealing, ackley2D, param_options, show_progress=False)
-pgs.solve()
+# set up the optimize_options dictionary
+optimize_options = {
+    'find_minimum': True,
+    'max_function_evals': 75
+}
 
-# show all permutations and their associated optimal positions and values found
-for grid in range(len(pgs.param_permutations)):
-    print(pgs.param_permutations[i])
+# create the an instance of the grid search class
+pgs = parameter_grid_search(particle_swarm_optimizer, 
+                            ackley, 
+                            var_list, 
+                            param_grid, 
+                            optimize_options)
 
-print(pgs.permutation_positions)
-print(pgs.permutation_values)
+# start the search
+pgs.search()
 
-# print the best parameter permutation found and the associated optimal position and value
-print(pgs.best_parameters)
-print(pgs.best_position)
-print(pgs.best_value)
+# show the optimal parameters, the best function value found, and a preview of all saved results
+print(f'best parameters: {pgs.best_parameters}')
+print(f'best value: {pgs.best_value}\n')
+print(pgs.results.head())
+</code></pre>
+<pre><code class="language-profile">best parameters: {'n_particles': 10, 'weight': 0.2, 'phi_p': 1.5, 'phi_g': 1.0, 'zero_velocity': False}
+best value: 0.026961543641856878
+
+   n_particles  weight  phi_p  ...         x         y  best_value
+0           10    0.20    1.5  ...  0.007717  0.004236    0.026962
+1           10    0.50    1.0  ...  0.021830 -0.003103    0.075259
+2           10    0.20    2.0  ...  0.019337 -0.018130    0.093595
+3           10    0.35    1.0  ... -0.028123  0.002833    0.101083
+4           10    0.20    1.5  ...  0.001063  0.031908    0.117212
+
+[5 rows x 8 columns]
 </code></pre>
               
             </div>
@@ -272,10 +283,10 @@ print(pgs.best_value)
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../enhanced_pattern_search/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../penalty_constraints/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../penalty_constraints/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../ackley/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
