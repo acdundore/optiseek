@@ -17,6 +17,10 @@ Benefits of using Optiseek include:
 - access to a variety of stopping criteria, suitable for both computationally expensive and cheap objective functions
 - carefully chosen default parameters for algorithms, with ability for user-defined fine tuning
 
+## Documentation
+
+For full documentation, visit the [github pages site](https://acdundore.github.io/optiseek/).
+
 ## Installation
 
 ```bash
@@ -62,12 +66,12 @@ This is a fairly basic example implementation without much thought put into para
 
 ### Tuning ML Hyperparameters
 
-The steps to tuning a custom ML algorithm with `optiseek` are straighforward:
+The steps to tuning hyperparameters for an ML algorithm with `optiseek` are straighforward:
 
 1. Prepare the training data
-- Create a function that performs cross-validation with the hyperparameters are arguments and error metric as output
-- Define the search space
-- Pass this to an algorithm in `optiseek` and optimize
+2. Create a function that performs cross-validation with the hyperparameters are arguments and error metric as output
+3. Define the search space
+4. Pass this to an algorithm in `optiseek` and optimize
 
 ```python
 # imports
@@ -138,10 +142,6 @@ print(f'best_position = {alg.best_position}')
 best_value = 0.60881
 best_position = {'learning_rate': 0.24843279626513076, 'num_leaves': 3000, 'max_depth': 3, 'min_child_weight': 0.06303795879741575, 'min_child_samples': 27, 'subsample': 0.5, 'colsample_bytree': 0.9620615099733333, 'reg_alpha': 0.022922559999999998}
 ```
-
-## Documentation
-
-For full documentation, visit the [github pages site](https://acdundore.github.io/optiseek/).
 
 ## License
 

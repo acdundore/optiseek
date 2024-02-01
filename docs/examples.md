@@ -118,12 +118,12 @@ In this case, we want to set a limit on the maximum number of allowed function e
 Also, we pass a file name to the `results_filename` optimization argument to preserve our results in the case
 that we need to terminate the algorithm prematurely.
 
-The steps to tuning a custom ML algorithm with `optiseek` are straighforward:
+The steps to tuning hyperparameters for an ML algorithm with `optiseek` are straighforward:
 
 1. Prepare the training data
-- Create a function that performs cross-validation with the hyperparameters are arguments and error metric as output
-- Define the search space
-- Pass this to an algorithm in `optiseek` and optimize
+2. Create a function that performs cross-validation with the hyperparameters are arguments and error metric as output
+3. Define the search space
+4. Pass this to an algorithm in `optiseek` and optimize
 
 ```python
 # imports
