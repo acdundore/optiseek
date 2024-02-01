@@ -1,4 +1,4 @@
-![optiseek logo](images/optiseek_logo_new_small.png)
+![optiseek logo](images/optiseek_logo_small.png)
 
 [![Downloads](https://static.pepy.tech/personalized-badge/optiseek?period=total&units=none&left_color=black&right_color=red&left_text=Downloads)](https://pepy.tech/project/optiseek)
 
@@ -10,10 +10,10 @@ The parameters of each of the algorithms can be tuned by the users and there is 
 Benefits of using Optiseek include:
 
 - support for float, integer, categorical, and boolean inputs for objective functions
-- compatibility with black-box objective functions (requires no information on gradients or shape of search space)
-- simple algorithms compared to alternatives (e.g. Bayesian optimization) with faster runtime on basic objective functions
+- compatibility with black-box objective functions (requires no information on gradients or form of function)
+- the algorithms are simple compared to alternatives (e.g. Bayesian optimization) with faster runtime on basic objective functions
 - competitive convergence for computionally expensive objective functions in terms of number of function evaluations
-- easy integration into ML pipelines for hyper-parameter tuning
+- seamless integration into ML pipelines for hyper-parameter tuning
 - access to a variety of stopping criteria, suitable for both computationally expensive and cheap objective functions
 - carefully chosen default parameters for algorithms, with ability for user-defined fine tuning
 
@@ -28,6 +28,7 @@ pip install optiseek
 `optiseek` provides access to numerous optimization algorithms that require minimal effort from the user. An example using the well-known particle swarm optimization algorithm can be as simple as this:
 
 ```python
+from optiseek.variables import var_float
 from optiseek.metaheuristics import particle_swarm_optimizer
 from optiseek.testfunctions import booth
 

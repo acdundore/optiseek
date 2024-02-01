@@ -63,6 +63,7 @@ If any of the criteria are met during optimization, the process is terminated.
 ### Example
 
 ```python
+from optiseek.variables import var_float
 from optiseek.metaheuristics import particle_swarm_optimizer
 from optiseek.testfunctions import booth
 

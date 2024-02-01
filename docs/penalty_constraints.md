@@ -51,9 +51,7 @@ quadratic penalties. This tool will work for any function, whether the user woul
 
 ---
 
-### Examples
-
-##### Example 1:
+### Example 1:
 
 We can demonstrate these constraints on a problem with several complex constraint equations to see it in action! Shown below is an engineering optimization problem
 taken from an article by Xin-She Yang (see references) based on the properties of a spring. The function, its constraints, and the variable bounds are given.
@@ -63,6 +61,7 @@ same arguments in the same order as the input function.
 ![Spring Problem Graphic](images/example_spring_problem.png)
 
 ```python
+from optiseek.variables import var_float
 from optiseek.modelhelpers import penalty_constraints
 from optiseek.metaheuristics import flying_foxes_algorithm
 
@@ -129,7 +128,9 @@ A very high penalty constraint value was necessary, as the constraints made the 
 We also used the constraint checking function created by the `penalty_constraints` helper to verify that our constraints were indeed satisfied with the best solution.
 Note that this is not guaranteed to be the global optimum.
 
-##### Example 2:
+---
+
+### Example 2:
 
 In this generic problem, the constraints require a bit more work to implement. 
 The *constraint_dict* parameter for the penalty constraints function requires the constraints to be compared to zero.  
@@ -145,6 +146,7 @@ First, we will re-arrange the constraints. We can use the minimum value for x, y
 ![Linear Constraints](images/example_linear_2.png)
 
 ```python
+from optiseek.variables import var_float
 from optiseek.modelhelpers import penalty_constraints
 from optiseek.metaheuristics import flying_foxes_algorithm
 

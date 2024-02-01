@@ -45,9 +45,10 @@ The best results of every permutation of parameters are saved for post-processin
 ### Example
 
 ```python
+from optiseek.variables import var_float
 from optiseek.modelhelpers import parameter_grid_search
 from optiseek.metaheuristics import particle_swarm_optimizer
-from optiseek.testfunctions import ackley2D
+from optiseek.testfunctions import ackley
 
 # define the variables for the Ackley2D function
 var_list = [
@@ -72,7 +73,7 @@ optimize_options = {
 
 # create the an instance of the grid search class
 pgs = parameter_grid_search(particle_swarm_optimizer, 
-							ackley2D, 
+							ackley, 
 							var_list, 
 							param_grid, 
 							optimize_options)
