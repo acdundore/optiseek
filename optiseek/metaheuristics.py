@@ -403,6 +403,51 @@ class _particle(_individual):
     def random_velocity(self, b_lower, b_upper):
         self.velocity = np.random.uniform(-abs(b_upper - b_lower), abs(b_upper - b_lower))
 
+class _fst_particle(_particle):
+    def __init__(self, n_dimensions):
+        super().__init__(n_dimensions)
+
+    # define a number of properties to be tracked separately for each particle in the FST-PSO algorithm
+    @property
+    def weight(self):
+        return self._weight
+
+    @weight.setter
+    def weight(self, value):
+        self._weight = value
+
+    @property
+    def phi_p(self):
+        return self._phi_p
+
+    @phi_p.setter
+    def phi_p(self, value):
+        self._phi_p = value
+
+    @property 
+    def phi_g(self):
+        return self._phi_g
+
+    @phi_g.setter
+    def phi_g(self, value):
+        self._phi_g = value
+
+    @property
+    def low_clamp(self):
+        return self._low_clamp
+
+    @low_clamp.setter
+    def low_clamp(self, value):
+        self._low_clamp = value
+
+    @property
+    def high_clamp(self):
+        return self._high_clamp
+
+    @high_clamp.setter
+    def high_clamp(self, value):
+        self._high_clamp = value
+
 class particle_swarm_optimizer(_metaheuristic):
     """
     A particle swarm optimization algorithm.
@@ -428,7 +473,7 @@ class particle_swarm_optimizer(_metaheuristic):
         Executes the algorithm solution with the current parameters.
 
     """
-    def __init__(self, objective_function=None, var_list=None, linspaced_initial_positions=True, results_filename=None, n_particles=None, weight=0.35, phi_p=1.5, phi_g=1.5, zero_velocity=False):
+    def __init__(self, objective_function=None, var_list=None, linspaced_initial_positions=True, results_filename=None, n_particles=None, weight=0.35, phi_p=1.5, phi_g=1.5, zero_velocity=False, fst=True):
         """
         Constructs the necessary attributes for the particle swarm optimizer.
 
@@ -483,6 +528,7 @@ class particle_swarm_optimizer(_metaheuristic):
         self.phi_p = phi_p # knowledge coefficient, which influences how much the particle's velocity is affected by it's own best known position
         self.phi_g = phi_g # social coefficient, which influences how much the particle's velocity is affected by swarms best known location
         self.zero_velocity = zero_velocity # boolean that indicates whether the particles should begin with zero velocity or not
+        self.fst = fst # boolean to indicate whether fuzzy self-tuning should be applied
 
     @property
     def n_particles(self):
@@ -552,6 +598,16 @@ class particle_swarm_optimizer(_metaheuristic):
             raise TypeError("zero_velocity must be a boolean.")
         self._zero_velocity = value
 
+    @property
+    def fst(self):
+        return self._fst
+
+    @fst.setter
+    def fst(self, value):
+        if type(value) is not bool:
+            raise TypeError("fst must be a boolean.")
+        self._fst = value
+
     def optimize(self, find_minimum, max_iter=None, max_function_evals=None, max_unchanged_iter=None, sol_threshold=None):
         """
         Executes the optimization iterations for the algorithm.
@@ -584,8 +640,8 @@ class particle_swarm_optimizer(_metaheuristic):
         # initialize optimization
         self._initialize_optimization(find_minimum, max_iter=max_iter, max_function_evals=max_function_evals, max_unchanged_iter=max_unchanged_iter, sol_threshold=sol_threshold)
 
-        # set n_particles if left to default
-        if self.n_particles == None:
+        # set n_particles if left to default or using FST
+        if self.n_particles == None or self.fst:
             self.n_particles = int(np.ceil(10 + 2 * np.sqrt(self.n_dimensions)))
 
         # check to make sure that max_function_evals is greater than the number of particles
@@ -597,7 +653,10 @@ class particle_swarm_optimizer(_metaheuristic):
         self._initialize_stored_results(self.n_particles)
 
         # create the swarm
-        swarm = [_particle(n_dimensions=self.n_dimensions) for p in range(self.n_particles)]
+        if not self.fst:
+            swarm = [_particle(n_dimensions=self.n_dimensions) for p in range(self.n_particles)]
+        else:
+            swarm = [_fst_particle(n_dimensions=self.n_dimensions) for p in range(self.n_particles)]
 
         # get initial positions for each particle
         if self.linspaced_initial_positions:
@@ -605,6 +664,12 @@ class particle_swarm_optimizer(_metaheuristic):
         else:
             # initialize a random position for each particle
             [p.random_position(self._b_lower, self._b_upper) for p in swarm]
+
+        # initialize the worst fitness value (used for FST)
+        if self._find_minimum:
+            worst_function_value = -np.inf
+        else:
+            worst_function_value = np.inf
 
         # calculate initial function values and store swarm's best known position and value
         for ind_num, p in enumerate(swarm):
@@ -617,25 +682,58 @@ class particle_swarm_optimizer(_metaheuristic):
                 self.best_position = p.position.copy()
                 self.best_value = p.best_value
 
+            # update the swarm's worst known position if necessary
+            if not self._first_is_better(p.best_value, worst_function_value):
+                worst_function_value = p.function_value
+
             # store intermediate results for post-processing if specified
             self._store_individual_results(individual=p, ind_num=ind_num, iteration_count=-1)
             if self._check_max_function_evals():
                 break
+
+        # if worst function value is very close to zero, replace with something else
+        if worst_function_value >= 0:
+            worst_function_value = max(1E-10, worst_function_value)
+        else:
+            worst_function_value = min(-1E-10, worst_function_value)
 
         # initialize the random velocity of the particles if necessary
         if self.zero_velocity is False:
             for p in swarm:
                 p.random_velocity(self._b_lower, self._b_upper)
 
+        # if using FST, initialize the weights and coefficients for each particle
+        if self.fst:
+            for p in swarm:
+                p.weight = 0.35
+                p.phi_g = 1.5
+                p.phi_p = 1.5
+                p.low_clamp = 0
+                p.high_clamp = 0.2
+
         # carry out the particle swarm optimization iterations
         iteration_count = 0
         unchanged_iterations = 0
         while self._check_stopping_criteria(iteration_count, unchanged_iterations, self.best_value):
             for ind_num, p in enumerate(swarm):
-                # update velocity
+                # get random cognitive and social vectors
                 r_p = np.random.uniform(0, 1, size=(self.n_dimensions,))
                 r_g = np.random.uniform(0, 1, size=(self.n_dimensions,))
-                p.velocity = self.weight * p.velocity + self.phi_p * r_p * (p.best_position - p.position) + self.phi_g * r_g * (self.best_position - p.position)
+
+                # update velocity by either the standard or FST method
+                if not self.fst:
+                    p.velocity = self.weight * p.velocity + self.phi_p * r_p * (p.best_position - p.position) + self.phi_g * r_g * (self.best_position - p.position)
+                else:
+                    p.velocity = p.weight * p.velocity + p.phi_p * r_p * (p.best_position - p.position) + p.phi_g * r_g * (self.best_position - p.position)
+                    velocity_signs = p.velocity / np.abs(p.velocity)
+                    p.velocity = np.maximum(np.abs(p.velocity), p.low_clamp * self._bound_widths)
+                    p.velocity = np.minimum(np.abs(p.velocity), p.high_clamp * self._bound_widths)
+                    p.velocity = p.velocity * velocity_signs
+
+                # store position and function value before it is updated 
+                if self.fst:
+                    prev_position = np.copy(p.position)
+                    prev_function_value = p.function_value
 
                 # update position
                 p.position += p.velocity
@@ -654,6 +752,59 @@ class particle_swarm_optimizer(_metaheuristic):
                         self.best_position = p.best_position.copy()
                         self.best_value = p.best_value
                         unchanged_iterations = 0
+
+                # update the particle weight and coefficients based on fuzzy rule system if necessary
+                if self.fst:
+                    # calculate distance from best known position of swarm
+                    d_from_g = np.sqrt(np.sum(np.square(p.position - self.best_position)))
+
+                    # calculate normalized fitness incremental factor
+                    distance_from_prev = np.sqrt(np.sum(np.square(p.position - prev_position)))
+                    d_max = np.sqrt(np.sum(np.square(self._bound_widths)))
+                    if self._find_minimum:
+                        incremental_factor = (distance_from_prev / d_max) * ((min(p.function_value, worst_function_value) - min(prev_function_value, worst_function_value)) / abs(worst_function_value))
+                    else:
+                        incremental_factor = (distance_from_prev / d_max) * -((max(p.function_value, worst_function_value) - max(prev_function_value, worst_function_value)) / abs(worst_function_value))
+                    incremental_factor = min(1, max(-1, incremental_factor))
+
+                    # calculate delta membership functions
+                    d_1 = 0.2 * d_max
+                    d_2 = 0.4 * d_max 
+                    d_3 = 0.6 * d_max
+                    if d_from_g < d_1:
+                        d_same = 1
+                        d_near = 0
+                        d_far = 0
+                    elif d_1 <= d_from_g < d_2:
+                        d_same = (d_2 - d_from_g) / (d_2 - d_1)
+                        d_near = (d_from_g - d_1) / (d_2 - d_1)
+                        d_far = 0
+                    elif d_2 <= d_from_g < d_3:
+                        d_same = 0
+                        d_near = (d_3 - d_from_g) / (d_3 - d_2)
+                        d_far = (d_from_g - d_2) / (d_3 - d_2)
+                    else:
+                        d_same = 0
+                        d_near = 0
+                        d_far = 1
+
+                    # calculate normalized fitness incremental factor membership functions
+                    if incremental_factor < 0:
+                        phi_better = -incremental_factor
+                        phi_same = 1 - np.abs(incremental_factor)
+                        phi_worse = 0
+                    else:
+                        phi_better = 0
+                        phi_same = 1 - np.abs(incremental_factor)
+                        phi_worse = incremental_factor
+
+                    # calculate the new weight and coefficients for the particle
+                    membership_total = phi_better + phi_same + phi_worse + d_same + d_near + d_far
+                    p.weight = (phi_worse * 0.3 + d_same * 0.3 + phi_same * 0.5 + d_near * 0.5 + phi_better * 1 + d_far * 1) / membership_total
+                    p.phi_g = (phi_better * 1 + d_near * 1 + phi_same * 2 + d_same * 2 + phi_worse * 3 + d_far * 3) / membership_total
+                    p.phi_p = (d_far * 0.1 + phi_worse * 1.5 + phi_same * 1.5 + d_same * 1.5 + d_near * 1.5 + phi_better * 3) / membership_total
+                    p.low_clamp = (phi_same * 0 + phi_better * 0 + d_far * 0 + d_same * 0.001 + d_near * 0.001 + phi_worse * 0.01) / membership_total
+                    p.high_clamp = (d_same * 0.1 + phi_same * 0.15 + phi_better * 0.15 + d_near * 0.15 + phi_worse * 0.2 + d_far * 0.2) / membership_total
 
                 # store intermediate results for post-processing if specified
                 self._store_individual_results(individual=p, ind_num=ind_num, iteration_count=iteration_count)
@@ -1648,14 +1799,6 @@ class _flying_fox(_individual):
         super().__init__(n_dimensions)
 
     @property
-    def previous_position(self):
-        return self._previous_position
-
-    @previous_position.setter
-    def previous_position(self, value):
-        self._previous_position = value
-
-    @property
     def previous_function_value(self):
         return self._previous_function_value
 
@@ -1678,97 +1821,6 @@ class _flying_fox(_individual):
     @pa.setter
     def pa(self, value):
         self._pa = value
-
-    def update_position(self, objective_function, find_minimum, coolest_position, coolest_value, population, delta_1, delta_3, _internal_to_specified, b_lower, b_upper):
-        # set boolean to indicate that the fox is far from the coolest spot and needs to be replaced
-        is_far = False
-
-        # calculating new position based on proximity to coolest known spot
-        if abs(coolest_value - self.function_value) > delta_1 / 2:
-            # array of uniform random numbers in [0, 1)
-            r = np.random.rand(self.n_dimensions, )
-
-            # generate new position
-            new_position = self.position + self.a * r * (coolest_position - self.position)
-
-            # apply boundary conditions if applicable
-            self.bounce_on_boundary(b_lower, b_upper)
-        else:
-            # use an array of mutation probabilities to determine parameters to be mutated if the fox is close to suffocation
-            mutation_probabilities = np.random.rand(self.n_dimensions,)
-            mutation_bool = mutation_probabilities > self.pa
-
-            # set a single dimension to mutate with 100% chance
-            mutation_bool[np.random.randint(0, high=self.n_dimensions)] = True
-
-            # two arrays of uniform random numbers in [0, 1)
-            r1 = np.random.rand(self.n_dimensions,)
-            r2 = np.random.rand(self.n_dimensions,)
-
-            # positions of two randomly selected foxes from the population
-            xR1 = population[np.random.randint(0, len(population))].position
-            xR2 = population[np.random.randint(0, len(population))].position
-
-            # generate new position, using mutation boolean to indicate dimensions to be changed
-            new_position = self.position + mutation_bool * (r1 * (coolest_position - self.position) + r2 * (xR1 - xR2))
-
-            # apply boundary conditions if applicable
-            self.bounce_on_boundary(b_lower, b_upper)
-
-        # update position of the fox if the new_position is better
-        new_function_value = objective_function(*_internal_to_specified(new_position))
-        if (find_minimum == True and new_function_value < self.function_value) or (find_minimum == False and new_function_value > self.function_value):
-            self.previous_function_value = self.function_value
-            self.position = new_position.copy()
-            self.function_value = new_function_value
-        else:
-            if abs(coolest_value - self.function_value) > delta_3:
-                is_far = True
-
-        return is_far
-
-    def tune_parameters(self, find_minimum, delta_1, delta_2, delta_3, delta_max, coolest_value, a_crisps, pa_crisps):
-        # crisps take the form [low, medium, high]
-
-        # calulate delta and phi for parameter tuning
-        delta = abs(coolest_value - self.function_value)
-        if (find_minimum == True and self.function_value < self.previous_function_value) or (find_minimum == False and self.function_value > self.previous_function_value):
-            phi_sign = 1
-        else:
-            phi_sign = -1
-        phi = phi_sign * (self.function_value - self.previous_function_value) / delta_max
-
-        # setting the Same, Near, and Far membership function values for delta
-        if delta < delta_1:
-            delta_same = 1
-            delta_near = 0
-            delta_far = 0
-        elif delta_1 <= delta and delta < delta_2:
-            delta_same = (delta_2 - delta) / (delta_2 - delta_1)
-            delta_near = (delta - delta_1) / (delta_2 - delta_1)
-            delta_far = 0
-        elif delta_2 <= delta and delta < delta_3:
-            delta_same = 0
-            delta_near = (delta_3 - delta) / (delta_3 - delta_2)
-            delta_far = (delta - delta_2) / (delta_3 - delta_2)
-        else:
-            delta_same = 0
-            delta_near = 0
-            delta_far = 1
-
-        # setting the Better, Same, and Worse membership values for phi
-        phi_same = min(max(1 - abs(phi), -1), 1)
-        if phi < 0:
-            phi_better = max(-phi, -1)
-            phi_worse = 0
-        else:
-            phi_better = 0
-            phi_worse = min(phi, 1)
-
-        # tuning parameters with the fuzzy rule system
-        membership_sum = delta_near + delta_same + delta_far + phi_worse + phi_same + phi_better
-        self.a = (phi_better * a_crisps[0] + phi_same * a_crisps[1] + delta_same * a_crisps[1] + delta_near * a_crisps[1] + phi_worse * a_crisps[2] + delta_far * a_crisps[2]) / membership_sum
-        self.pa = (phi_worse * pa_crisps[0] + delta_far * pa_crisps[0] + phi_same * pa_crisps[1] + delta_same * pa_crisps[1] + phi_better * pa_crisps[2] + delta_near * pa_crisps[2]) / membership_sum
 
 class flying_foxes_algorithm(_metaheuristic):
     """
@@ -1861,14 +1913,12 @@ class flying_foxes_algorithm(_metaheuristic):
             SL_dict[ff] = ff.function_value # adding to survival list, to be edited later
 
         # sort the function values and truncate to create the survival list
-        SL = dict(sorted(SL_dict.items(), key=lambda x: x[1], reverse=not self._find_minimum)[0:NL]).keys()
+        SL = dict(sorted(SL_dict.items(), key=lambda x: x[1], reverse=(not self._find_minimum))[0:NL]).keys()
 
         # create an array of positions on the survival list for future use
         SL_positions = np.zeros(shape=(NL, self.n_dimensions))
-        i = 0
-        for ff in SL:
+        for i, ff in enumerate(SL):
             SL_positions[i, :] = ff.position
-            i += 1
 
         return [SL, SL_positions]
 
@@ -1877,7 +1927,7 @@ class flying_foxes_algorithm(_metaheuristic):
         n_from_SL = np.random.randint(2, NL + 1)
 
         # calculate new position and corresponding function value
-        ff.position = np.sum(SL_positions[0:n_from_SL, :], axis=0) / n_from_SL
+        ff.position = np.sum(SL_positions[0:n_from_SL+1, :], axis=0) / n_from_SL
         ff.previous_function_value = ff.function_value
         ff.function_value = self.objective_function(*self._internal_to_specified(ff.position))
 
@@ -1927,7 +1977,7 @@ class flying_foxes_algorithm(_metaheuristic):
         pa_crisps = [0.5, 0.85, 0.99]
 
         # set crowding tolerance to be used as a measure of closeness when calculating pD
-        crowding_tolerance = 0.03
+        crowding_tolerance = 0.01
 
         # initialize survival list size
         NL = int(np.ceil(self.n_foxes / 4))
@@ -1974,31 +2024,114 @@ class flying_foxes_algorithm(_metaheuristic):
 
         coolest_position, coolest_value, hottest_position, hottest_value = self._update_cool_hot_positions(population, coolest_position, coolest_value, hottest_position, hottest_value)
 
+        # calculating the approximate number of planned iterations, for use in calculation in m vector
+        if self._max_iter is not None and self._max_function_evals is not None:
+            pseudo_max_iter = min(self._max_iter, self._max_function_evals / self.n_foxes)
+        elif self._max_iter is not None and self._max_function_evals is None:
+            pseudo_max_iter = self._max_iter
+        else:
+            pseudo_max_iter = self._max_function_evals / self.n_foxes
+
         # start solution iterations
         iteration_count = 0
         unchanged_iterations = 0
         while self._check_stopping_criteria(iteration_count, unchanged_iterations, self.best_value):
             # setting the m vector for the current iteration and calculating corresponding delta values
-            if self._max_iter is not None and self._max_function_evals is not None:
-                pseudo_max_iter = min(self._max_iter, self._max_function_evals / self.n_foxes)
-            elif self._max_iter is not None and self._max_function_evals is None:
-                pseudo_max_iter = self._max_iter
-            else:
-                pseudo_max_iter = self._max_function_evals / self.n_foxes
-
             m = m_max - (iteration_count / pseudo_max_iter) * (m_max - m_min)
             delta_max = abs(coolest_value - hottest_value)
             delta_1 = m[0] * delta_max
             delta_2 = m[1] * delta_max
             delta_3 = m[2] * delta_max
 
-            # resetting ind_num for the current iteration
-            ind_num = 0
-
             # tune parameters and update positions for all flying foxes
+            ind_num = 0
             for ff in population:
-                ff.tune_parameters(self._find_minimum, delta_1, delta_2, delta_3, delta_max, coolest_value, a_crisps, pa_crisps)
-                is_far = ff.update_position(self.objective_function, self._find_minimum, coolest_position, coolest_value, population, delta_1, delta_3, self._internal_to_specified, self._b_lower, self._b_upper)
+                # calulate delta and phi for parameter tuning
+                delta = abs(coolest_value - ff.function_value)
+                if self._find_minimum:
+                    phi = (ff.function_value - ff.previous_function_value) / delta_max
+                else:
+                    phi = -(ff.function_value - ff.previous_function_value) / delta_max
+                phi = min(max(phi, -1), 1) # constrain phi to [-1, 1]
+
+                # setting the Same, Near, and Far membership function values for delta
+                if delta < delta_1:
+                    delta_same = 1
+                    delta_near = 0
+                    delta_far = 0
+                elif delta_1 <= delta and delta < delta_2:
+                    delta_same = (delta_2 - delta) / (delta_2 - delta_1)
+                    delta_near = (delta - delta_1) / (delta_2 - delta_1)
+                    delta_far = 0
+                elif delta_2 <= delta and delta < delta_3:
+                    delta_same = 0
+                    delta_near = (delta_3 - delta) / (delta_3 - delta_2)
+                    delta_far = (delta - delta_2) / (delta_3 - delta_2)
+                else:
+                    delta_same = 0
+                    delta_near = 0
+                    delta_far = 1
+
+                # setting the Better, Same, and Worse membership values for phi
+                phi_same = min(max(1 - abs(phi), 0), 1)
+                if phi < 0:
+                    phi_better = min(max(-phi, 0), 1)
+                    phi_worse = 0
+                else:
+                    phi_better = 0
+                    phi_worse = min(max(phi, 0), 1)
+
+                # tuning parameters with the fuzzy rule system (crisps take the form [low, medium, high])
+                membership_sum = delta_near + delta_same + delta_far + phi_worse + phi_same + phi_better
+                ff.a = (phi_better * a_crisps[0] + phi_same * a_crisps[1] + delta_same * a_crisps[1] + delta_near * a_crisps[1] + phi_worse * a_crisps[2] + delta_far * a_crisps[2]) / membership_sum
+                ff.pa = (phi_worse * pa_crisps[0] + delta_far * pa_crisps[0] + phi_same * pa_crisps[1] + delta_same * pa_crisps[1] + phi_better * pa_crisps[2] + delta_near * pa_crisps[2]) / membership_sum
+
+                # setting a default value for the boolean to check if a fox is far or not
+                is_far = False
+
+                # calculating new position based on proximity to coolest known spot
+                if abs(coolest_value - ff.function_value) > delta_1 / 2:
+                    # array of uniform random numbers in [0, 1)
+                    r = np.random.rand(ff.n_dimensions, )
+
+                    # generate new position
+                    new_position = ff.position + ff.a * r * (coolest_position - ff.position)
+
+                    # apply boundary conditions if applicable
+                    ff.bounce_on_boundary(self._b_lower, self._b_upper)
+                else:
+                    # use an array of mutation probabilities to determine parameters to be mutated if the fox is close to suffocation
+                    mutation_probabilities = np.random.rand(ff.n_dimensions, )
+                    mutation_bool = mutation_probabilities >= ff.pa
+
+                    # set a single dimension to mutate with 100% chance
+                    mutation_bool[np.random.randint(0, high=ff.n_dimensions)] = True
+
+                    # two arrays of uniform random numbers in [0, 1)
+                    r1 = np.random.rand(ff.n_dimensions, )
+                    r2 = np.random.rand(ff.n_dimensions, )
+
+                    # positions of two randomly selected foxes from the population
+                    xR1 = population[np.random.randint(0, len(population))].position
+                    xR2 = population[np.random.randint(0, len(population))].position
+
+                    # generate new position, using mutation boolean to indicate dimensions to be changed
+                    new_position = ff.position + mutation_bool * (r1 * (coolest_position - ff.position) + r2 * (xR1 - xR2))
+
+                    # # apply boundary conditions if applicable
+                    # ff.bounce_on_boundary(b_lower, b_upper)
+
+                # update position of the fox if the new_position is better
+                new_function_value = self.objective_function(*self._internal_to_specified(new_position))
+                if (find_minimum == True and new_function_value < ff.function_value) or (find_minimum == False and new_function_value > ff.function_value):
+                    # ff.previous_function_value = ff.function_value
+                    ff.function_value = new_function_value
+                    ff.position = new_position.copy()
+                else:
+                    if abs(coolest_value - ff.function_value) > delta_3:
+                        is_far = True
+
+                # store the results
                 self._store_individual_results(individual=ff, ind_num=ind_num, iteration_count=iteration_count)
                 ind_num += 1
                 if self._check_max_function_evals():
@@ -2021,7 +2154,8 @@ class flying_foxes_algorithm(_metaheuristic):
             foxes_in_coolest_spot = []
             for ff in population:
                 # check to see if the position is close enough to be considered in the "same" position as coolest position
-                if abs((ff.function_value - coolest_value) / max(coolest_value, 1e-50)) < crowding_tolerance:
+                # if abs((ff.function_value - coolest_value) / max(coolest_value, 1e-50)) < crowding_tolerance:
+                if abs(ff.function_value - coolest_value) < crowding_tolerance * abs(hottest_value - coolest_value):
                     nc += 1
                     foxes_in_coolest_spot.append(ff)
 
