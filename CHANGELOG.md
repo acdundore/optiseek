@@ -27,3 +27,10 @@
 ## v0.1.0 (2022.05.30)
 
 - Original Release
+
+## v0.1.1 (2022.08.07)
+
+### Features
+
+- Added functionality for Fuzzy Self-Tuning Particle Swarm Optimization per methodology outlined in Nobile et. al.
+- Flying Foxes algorithm has been refactored, and some bugs were fixed

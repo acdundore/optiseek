@@ -5,10 +5,12 @@ This class represents a standard particle swarm optimization algorithm, original
 This algorithm is based on swarm behavior commonly observed in nature. 
 A population of particles is introduced to traverse the search space. 
 Their movement is influenced by their own previous positions, the best known position of the swarm, and some stochastic velocity.
+This class also supports a modified version of PSO that supports fuzzy self-tuning (FST) for the parameters for each individual particle every iteration,
+leading to enhanced optimization performance without the need to specify any parameters.
 
 ---
 
-> *class* optiseek.metaheuristics.**particle_swarm_optimizer**(*input_function=None, var_list=None, linspaced_initial_positions=True, results_filename=None, n_particles=None, weight=0.35, phi_p=1.5, phi_g=1.5, zero_velocity=False*)
+> *class* optiseek.metaheuristics.**particle_swarm_optimizer**(*input_function=None, var_list=None, fst=True, linspaced_initial_positions=True, results_filename=None, n_particles=None, weight=0.35, phi_p=1.5, phi_g=1.5, zero_velocity=False*)
 
 ---
 
@@ -20,6 +22,7 @@ All parameters are also class attributes and may be modified after instantiation
 |---|---|
 | input_function : *function* | Function that the algorithm will use to search for an optimum.<br/> \*args will be passed to the function within the solver. |
 | var_list : *list of variables* | List of variables (see variable types) to define the search space.<br/> These correspond to the arguments of the objective function<br/> and must be in the exact same order. |
+| fst : *bool* | Flag for fuzzy self-tuning of parameters by the method outlined <br/>by Nobile et. al. If true, the parameter values for each particle are <br/>automatically defined at each iteration according to fuzzy logic. <br/>In this case, inputs for n_particles, weight, phi_p, and phi_g will <br/>be ignored. If false, global parameter values as input by the user <br/>will be used for standard particle swarm optimization.
 | linspaced_initial_positions : *bool* | If true, creates a linearly spaced set of points in each search<br/> dimension, and the initial positions of the population are set to<br/> mutually exclusive combinations of these points. This guarantees<br/> that there will be no empty spots in a single dimension. If false,<br/> random initial positions are chosen. |
 | results_filename : *string* | If a file name is passed (ending in '.csv'), the results will be written<br/> to this file after each function evaluation. This can noticeably slow<br/> down solution iterations for quick objective functions. For greedy<br/> functions, it can be beneficial to do this in case the script is<br/> interrupted. |
 | n_particles : *int* | Number of particles to use in the particle swarm population. If<br/> set to `None`, the population size will be based on the heuristic<br/> 10 + 2 \* sqrt(n_dims), where n_dims is the dimensionality of<br/> the search space. This is typically sufficient to explore the<br/> whole search space. |
@@ -96,3 +99,5 @@ n_iter = 8
 ### References
 
 [Particle Swarm Optimization on Wikipedia](https://en.wikipedia.org/wiki/Particle_swarm_optimization)
+
+[Fuzzy Self-Tuning PSO: A Settings-Free Algorithm for Global Optimization, by Nobile et. al.](https://www.sciencedirect.com/science/article/abs/pii/S2210650216303534)
